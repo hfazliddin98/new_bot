@@ -23,7 +23,7 @@ except:
 
 import telebot
 from telebot import types
-from .models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory
+from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory, OrderSession
 from decimal import Decimal
 
 # Logging sozlash
@@ -35,6 +35,15 @@ try:
     BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
 except:
     BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', "7908094134:AAHhj28h-QmV8hqEqOZAUnU9ebXBEwwKuA0")
+
+# User states uchun global dictionary
+user_states = {}
+
+class OrderStates:
+    """Buyurtma holatlari"""
+    WAITING_ADDRESS = "waiting_address"
+    WAITING_PHONE = "waiting_phone"
+    WAITING_NOTES = "waiting_notes"
 
 def create_bot_instance():
     """Xatoliksiz bot instance yaratish"""
@@ -391,30 +400,66 @@ def show_user_orders(chat_id, user):
     send_safe_message(chat_id, text, markup)
 
 def place_order(chat_id, user):
-    """Buyurtma berish"""
+    """Buyurtma berish - manzil so'rash boshlash"""
     cart_items = Cart.objects.filter(user=user)
     
     if not cart_items.exists():
         send_safe_message(chat_id, "❌ Savatingiz bo'sh! Avval mahsulot qo'shing.", get_main_menu_keyboard())
         return
     
+    # OrderSession yaratish yoki yangilash
+    order_session, created = OrderSession.objects.get_or_create(
+        user=user,
+        is_completed=False,
+        defaults={
+            'delivery_address': '',
+            'room_number': user.room_number or '',
+            'phone_number': user.phone_number or '',
+            'dormitory': user.dormitory
+        }
+    )
+    
+    # User state'ni o'rnatish
+    user_states[user.user_id] = {
+        'state': OrderStates.WAITING_ADDRESS,
+        'order_session_id': order_session.id
+    }
+    
+    text = "📍 *Yetkazib berish manzilini kiriting:*\n\n"
+    text += "Manzil formatini quyidagicha kiriting:\n"
+    text += "• Yotoqxona nomi, Xona raqami\n"
+    text += "• To'liq manzil\n\n"
+    text += "*Masalan:*\n"
+    text += "• 1-yotoqxona, 205-xona\n"
+    text += "• Pedagogika instituti, A-101\n"
+    text += "• Shahrisabz ko'chasi 15-uy, 3-xonadon\n\n"
+    text += "❌ Bekor qilish uchun /cancel yozing"
+    
+    send_safe_message(chat_id, text, None, parse_mode='Markdown')
+
+def complete_order_with_session(chat_id, user, order_session):
+    """OrderSession yordamida buyurtmani yakunlash"""
     try:
-        # Buyurtma yaratish
+        cart_items = Cart.objects.filter(user=user)
+        
+        if not cart_items.exists():
+            send_safe_message(chat_id, "❌ Savatingiz bo'sh!", get_main_menu_keyboard())
+            return
+        
+        # Umumiy summani hisoblash
         total_amount = Decimal('0')
         for item in cart_items:
             total_amount += item.get_total_price()
         
-        # Yetkazib berish manzili
-        delivery_address = f"{user.dormitory.name}, {user.room_number}-xona" if user.dormitory else "Aniqlanmagan"
-        
         # Buyurtma yaratish
         order = Order.objects.create(
             user=user,
-            dormitory=user.dormitory,
-            delivery_address=delivery_address,
-            room_number=user.room_number,
-            phone_number=user.phone_number,
+            dormitory=order_session.dormitory,
+            delivery_address=order_session.delivery_address,
+            room_number=order_session.room_number,
+            phone_number=order_session.phone_number,
             total_amount=total_amount,
+            notes=order_session.additional_notes,
             status='pending'
         )
         
@@ -430,27 +475,36 @@ def place_order(chat_id, user):
         # Savatni tozalash
         cart_items.delete()
         
-        # Buyurtma tasdiqlanganini yuborish
-        text = f"✅ Buyurtma #{order.id} muvaffaqiyatli qabul qilindi!\n\n"
+        # OrderSession'ni tugatish
+        order_session.is_completed = True
+        order_session.save()
+        
+        # User state'ni tozalash
+        if user.user_id in user_states:
+            del user_states[user.user_id]
+        
+        # Buyurtma tasdiqlash xabari
+        text = f"✅ *Buyurtma #{order.id} qabul qilindi!*\n\n"
         text += f"📅 Vaqt: {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
         text += f"💰 Summa: {total_amount:,} so'm\n"
-        text += f"📍 Manzil: {delivery_address}\n"
-        text += f"📱 Telefon: {user.phone_number}\n\n"
-        text += "⏳ Buyurtmangiz ko'rib chiqilmoqda...\n"
+        text += f"📍 Manzil: {order_session.delivery_address}\n"
+        text += f"📱 Telefon: {order_session.phone_number}\n"
+        if order_session.additional_notes:
+            text += f"📝 Izoh: {order_session.additional_notes}\n"
+        text += "\n⏳ Buyurtmangiz ko'rib chiqilmoqda...\n"
         text += "📞 Tez orada siz bilan bog'lanamiz!"
         
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("📋 Buyurtmalarim", callback_data="my_orders"))
         markup.add(types.InlineKeyboardButton("🔙 Bosh menyu", callback_data="back_to_main"))
         
-        send_safe_message(chat_id, text, markup)
+        send_safe_message(chat_id, text, markup, parse_mode='Markdown')
         
-        # Admin/kitchen'ga xabar yuborish (keyinchalik qo'shiladi)
-        logger.info(f"Yangi buyurtma: #{order.id} - {user.full_name} - {total_amount} so'm")
+        logger.info(f"Yangi buyurtma: #{order.id} - {user.get_display_name()} - {total_amount} so'm")
         
     except Exception as e:
-        logger.error(f"Buyurtma berishda xatolik: {e}")
-        send_safe_message(chat_id, "❌ Buyurtma berishda xatolik yuz berdi. Qaytadan urinib ko'ring.", get_main_menu_keyboard())
+        logger.error(f"Buyurtma yakunlashda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Buyurtma yaratishda xatolik yuz berdi. Qaytadan urinib ko'ring.", get_main_menu_keyboard())
 
 # Bot handler'lari
 def setup_handlers():
@@ -620,6 +674,105 @@ def setup_handlers():
                 # Foydalanuvchi mavjud emas, start buyrug'ini yuborish
                 send_safe_message(message.chat.id, "Iltimos, /start buyrug'ini bosing.")
                 return
+            
+            # Cancel buyrug'ini tekshirish
+            if text == "/cancel":
+                if user_id in user_states:
+                    del user_states[user_id]
+                    # OrderSession'ni tozalash
+                    OrderSession.objects.filter(user=user, is_completed=False).delete()
+                    send_safe_message(message.chat.id, "❌ Buyurtma bekor qilindi.", get_main_menu_keyboard())
+                    return
+                else:
+                    send_safe_message(message.chat.id, "Hech qanday amal bekor qilinmadi.", get_main_menu_keyboard())
+                    return
+            
+            # Buyurtma jarayonidagi xabarlarni qayta ishlash
+            if user_id in user_states:
+                state_data = user_states[user_id]
+                
+                if state_data['state'] == OrderStates.WAITING_ADDRESS:
+                    # Manzilni saqlash
+                    try:
+                        order_session = OrderSession.objects.get(id=state_data['order_session_id'])
+                        order_session.delivery_address = text
+                        order_session.save()
+                        
+                        # Telefon so'rash
+                        user_states[user_id]['state'] = OrderStates.WAITING_PHONE
+                        
+                        phone_text = "📱 *Telefon raqamingizni kiriting:*\n\n"
+                        phone_text += "Format: +998901234567 yoki 901234567\n\n"
+                        if user.phone_number:
+                            phone_text += f"Saqlangan raqam: {user.phone_number}\n"
+                            phone_text += "Saqlangan raqamni ishlatish uchun 'ok' yozing\n\n"
+                        phone_text += "❌ Bekor qilish uchun /cancel yozing"
+                        
+                        send_safe_message(message.chat.id, phone_text, None, parse_mode='Markdown')
+                        return
+                        
+                    except OrderSession.DoesNotExist:
+                        del user_states[user_id]
+                        send_safe_message(message.chat.id, "❌ Sessiya tugadi. Qaytadan boshlang.", get_main_menu_keyboard())
+                        return
+                
+                elif state_data['state'] == OrderStates.WAITING_PHONE:
+                    # Telefon raqamini saqlash
+                    try:
+                        order_session = OrderSession.objects.get(id=state_data['order_session_id'])
+                        
+                        if text.lower() == 'ok' and user.phone_number:
+                            phone = user.phone_number
+                        else:
+                            # Telefon raqam formatini tekshirish
+                            import re
+                            phone_pattern = r'^(\+998|998|0)?([0-9]{9})$'
+                            match = re.match(phone_pattern, text)
+                            
+                            if match:
+                                phone = f"+998{match.group(2)}"
+                            else:
+                                send_safe_message(message.chat.id, "❌ Noto'g'ri telefon format. Qaytadan kiriting:")
+                                return
+                        
+                        order_session.phone_number = phone
+                        order_session.save()
+                        
+                        # Qo'shimcha izoh so'rash
+                        user_states[user_id]['state'] = OrderStates.WAITING_NOTES
+                        
+                        notes_text = "📝 *Qo'shimcha izoh (ixtiyoriy):*\n\n"
+                        notes_text += "• Maxsus talablar\n"
+                        notes_text += "• Yetkazib berish vaqti\n"
+                        notes_text += "• Boshqa ma'lumotlar\n\n"
+                        notes_text += "Izoh yo'q bo'lsa 'yo'q' yozing\n"
+                        notes_text += "❌ Bekor qilish uchun /cancel yozing"
+                        
+                        send_safe_message(message.chat.id, notes_text, None, parse_mode='Markdown')
+                        return
+                        
+                    except OrderSession.DoesNotExist:
+                        del user_states[user_id]
+                        send_safe_message(message.chat.id, "❌ Sessiya tugadi. Qaytadan boshlang.", get_main_menu_keyboard())
+                        return
+                
+                elif state_data['state'] == OrderStates.WAITING_NOTES:
+                    # Izohni saqlash va buyurtmani yakunlash
+                    try:
+                        order_session = OrderSession.objects.get(id=state_data['order_session_id'])
+                        
+                        if text.lower() != 'yo\'q':
+                            order_session.additional_notes = text
+                            order_session.save()
+                        
+                        # Buyurtmani yakunlash
+                        complete_order_with_session(message.chat.id, user, order_session)
+                        return
+                        
+                    except OrderSession.DoesNotExist:
+                        del user_states[user_id]
+                        send_safe_message(message.chat.id, "❌ Sessiya tugadi. Qaytadan boshlang.", get_main_menu_keyboard())
+                        return
             
             # Ro'yxatdan o'tish jarayoni
             if not user.is_registered:

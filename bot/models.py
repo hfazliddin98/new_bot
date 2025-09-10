@@ -79,6 +79,24 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.user.first_name} - {self.product.name} x{self.quantity}"
 
+class OrderSession(models.Model):
+    """Buyurtma sessiyasi - har bir buyurtma uchun alohida manzil"""
+    user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
+    delivery_address = models.TextField(verbose_name="Yetkazib berish manzili")
+    room_number = models.CharField(max_length=20, verbose_name="Xona raqami")
+    phone_number = models.CharField(max_length=20, verbose_name="Telefon raqam")
+    dormitory = models.ForeignKey('Dormitory', on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Yotoqxona")
+    additional_notes = models.TextField(blank=True, verbose_name="Qo'shimcha izoh")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan vaqt")
+    is_completed = models.BooleanField(default=False, verbose_name="Tugatilgan")
+    
+    class Meta:
+        verbose_name = "Buyurtma sessiyasi"
+        verbose_name_plural = "Buyurtma sessiyalari"
+    
+    def __str__(self):
+        return f"{self.user.get_display_name()} - {self.delivery_address}"
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Kutilmoqda'),
