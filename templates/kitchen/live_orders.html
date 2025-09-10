@@ -1,0 +1,192 @@
+{% extends 'kitchen/base.html' %}
+
+{% block title %}Jonli buyurtmalar - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clock"></i> Jonli buyurtmalar</h2>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-info" onclick="autoRefresh()">
+                        <i class="fas fa-sync-alt"></i> Avtomatik yangilash: <span id="refresh-status">OFF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistika kartalar -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-hourglass-start fa-2x mb-2"></i>
+                    <h3>{{ orders|length }}</h3>
+                    <p class="mb-0">Bugungi buyurtmalar</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                    <h3 id="new-orders">0</h3>
+                    <p class="mb-0">Yangi buyurtmalar</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-fire fa-2x mb-2"></i>
+                    <h3 id="preparing-orders">0</h3>
+                    <p class="mb-0">Tayyorlanmoqda</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h3 id="ready-orders">0</h3>
+                    <p class="mb-0">Tayyor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buyurtmalar ro'yxati -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list"></i> Bugungi buyurtmalar
+                <small class="text-muted">Oxirgi yangilanish: <span id="last-update">{{ "now"|date:"H:i:s" }}</span></small>
+            </h5>
+        </div>
+        <div class="card-body" id="orders-container">
+            {% if orders %}
+            <div class="row">
+                {% for order in orders %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-left-{% if not order.orderprogress %}danger{% elif order.orderprogress.status == 'preparing' %}primary{% elif order.orderprogress.status == 'ready' %}success{% else %}warning{% endif %}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="card-title mb-0">
+                                    #{{ order.id }}
+                                </h6>
+                                {% if not order.orderprogress %}
+                                    <span class="badge badge-danger">Yangi</span>
+                                {% elif order.orderprogress.status == 'preparing' %}
+                                    <span class="badge badge-primary">Tayyorlanmoqda</span>
+                                {% elif order.orderprogress.status == 'ready' %}
+                                    <span class="badge badge-success">Tayyor</span>
+                                {% else %}
+                                    <span class="badge badge-warning">{{ order.orderprogress.get_status_display }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user"></i> {{ order.user.get_display_name }}
+                                <br>
+                                <i class="fas fa-clock"></i> {{ order.created_at|date:"H:i" }}
+                                <br>
+                                <i class="fas fa-home"></i> {{ order.delivery_address }}
+                            </p>
+                            
+                            <div class="mb-2">
+                                {% for item in order.items.all %}
+                                <small class="d-block">
+                                    {{ item.quantity }}x {{ item.product.name }}
+                                </small>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong class="text-success">{{ order.total_amount|floatformat:0 }} so'm</strong>
+                                <a href="{% url 'kitchen:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Ko'rish
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Bugun hali buyurtmalar yo'q</h5>
+                <p class="text-muted">Yangi buyurtmalar kelganda bu yerda ko'rinadi</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+let refreshInterval;
+let isAutoRefresh = false;
+
+function autoRefresh() {
+    if (isAutoRefresh) {
+        clearInterval(refreshInterval);
+        isAutoRefresh = false;
+        document.getElementById('refresh-status').textContent = 'OFF';
+    } else {
+        refreshInterval = setInterval(loadOrders, 30000); // 30 soniyada bir yangilash
+        isAutoRefresh = true;
+        document.getElementById('refresh-status').textContent = 'ON';
+    }
+}
+
+function loadOrders() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContainer = doc.getElementById('orders-container');
+            
+            if (newContainer) {
+                document.getElementById('orders-container').innerHTML = newContainer.innerHTML;
+            }
+            
+            // Vaqtni yangilash
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+            
+            // Statistikani yangilash
+            updateStats();
+        })
+        .catch(error => {
+            console.error('Error loading orders:', error);
+        });
+}
+
+function updateStats() {
+    const cards = document.querySelectorAll('.card');
+    let newOrders = 0;
+    let preparingOrders = 0;
+    let readyOrders = 0;
+    
+    cards.forEach(card => {
+        const badge = card.querySelector('.badge');
+        if (badge) {
+            if (badge.textContent === 'Yangi') newOrders++;
+            else if (badge.textContent === 'Tayyorlanmoqda') preparingOrders++;
+            else if (badge.textContent === 'Tayyor') readyOrders++;
+        }
+    });
+    
+    document.getElementById('new-orders').textContent = newOrders;
+    document.getElementById('preparing-orders').textContent = preparingOrders;
+    document.getElementById('ready-orders').textContent = readyOrders;
+}
+
+// Sahifa yuklanganda statistikani yangilash
+document.addEventListener('DOMContentLoaded', function() {
+    updateStats();
+});
+</script>
+{% endblock %}

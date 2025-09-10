@@ -1,0 +1,340 @@
+{% extends 'base.html' %}
+
+{% block title %}Yetkazib berishlar{% endblock %}
+
+{% block sidebar %}
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'courier:dashboard' %}">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'courier:deliveries' %}">
+                    <i class="fas fa-truck"></i> Yetkazib berishlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'courier:history' %}">
+                    <i class="fas fa-history"></i> Tarix
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-truck"></i> Yetkazib berishlar</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync"></i> Yangilash
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Status filter -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <a href="{% url 'courier:deliveries' %}" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">
+                <i class="fas fa-list"></i> Barchasi
+            </a>
+            <a href="{% url 'courier:deliveries' %}?status=ready" class="btn btn-outline-warning {% if status_filter == 'ready' %}active{% endif %}">
+                <i class="fas fa-clock"></i> Tayyor
+            </a>
+            <a href="{% url 'courier:deliveries' %}?status=assigned" class="btn btn-outline-info {% if status_filter == 'assigned' %}active{% endif %}">
+                <i class="fas fa-user"></i> Menga biriktirilgan
+            </a>
+            <a href="{% url 'courier:deliveries' %}?status=picked_up" class="btn btn-outline-primary {% if status_filter == 'picked_up' %}active{% endif %}">
+                <i class="fas fa-box"></i> Olingan
+            </a>
+            <a href="{% url 'courier:deliveries' %}?status=on_way" class="btn btn-outline-success {% if status_filter == 'on_way' %}active{% endif %}">
+                <i class="fas fa-shipping-fast"></i> Yo'lda
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Available/Busy Toggle -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <h5 class="mb-0">Status:</h5>
+                    </div>
+                    <div class="me-3">
+                        {% if user.courierstaff.is_available %}
+                            <span class="badge bg-success fs-6">
+                                <i class="fas fa-check-circle"></i> Mavjud
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger fs-6">
+                                <i class="fas fa-times-circle"></i> Band
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button class="btn btn-sm {% if user.courierstaff.is_available %}btn-warning{% else %}btn-success{% endif %}" 
+                                onclick="toggleAvailability()">
+                            {% if user.courierstaff.is_available %}
+                                <i class="fas fa-pause"></i> Band qilish
+                            {% else %}
+                                <i class="fas fa-play"></i> Mavjud qilish
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deliveries List -->
+<div class="card">
+    <div class="card-body">
+        {% if deliveries %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Buyurtma</th>
+                            <th>Mijoz</th>
+                            <th>Manzil</th>
+                            <th>Mahsulotlar</th>
+                            <th>Holat</th>
+                            <th>Vaqt</th>
+                            <th>Summa</th>
+                            <th>Amal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for delivery in deliveries %}
+                            <tr>
+                                <td><strong>#{{ delivery.order.id }}</strong></td>
+                                <td>
+                                    <i class="fas fa-user"></i> {{ delivery.order.user.get_display_name }}
+                                    <br><small class="text-muted">{{ delivery.order.phone_number }}</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-map-marker-alt"></i> {{ delivery.order.dormitory.name }}
+                                    <br><small class="text-muted">Xona: {{ delivery.order.room_number }}</small>
+                                    {% if delivery.delivery_address %}
+                                        <br><small class="text-info">{{ delivery.delivery_address }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for item in delivery.order.orderitem_set.all %}
+                                        <small>{{ item.quantity }}x {{ item.product.name }}</small><br>
+                                    {% empty %}
+                                        <small class="text-muted">Ma'lumot yo'q</small>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ delivery.get_status_color }}">
+                                        {{ delivery.get_status_display }}
+                                    </span>
+                                    {% if delivery.courier %}
+                                        <br><small class="text-muted">{{ delivery.courier.full_name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if delivery.assigned_at %}
+                                        <small>Biriktirilgan: {{ delivery.assigned_at|date:"H:i" }}</small><br>
+                                    {% endif %}
+                                    {% if delivery.picked_up_at %}
+                                        <small>Olingan: {{ delivery.picked_up_at|date:"H:i" }}</small><br>
+                                    {% endif %}
+                                    {% if delivery.delivered_at %}
+                                        <small>Yetkazilgan: {{ delivery.delivered_at|date:"H:i" }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ delivery.order.total_amount|floatformat:0 }} so'm</strong>
+                                    <br><small class="text-muted">{{ delivery.order.orderitem_set.count }} mahsulot</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group-vertical" role="group">
+                                        {% if delivery.status == 'ready' and delivery.courier != user.courierstaff %}
+                                            <button class="btn btn-sm btn-success mb-1" data-delivery-id="{{ delivery.id }}" onclick="takeOrder(this.dataset.deliveryId)" title="Qabul qilish">
+                                                <i class="fas fa-hand-paper"></i> Olish
+                                            </button>
+                                        {% elif delivery.status == 'assigned' and delivery.courier == user.courierstaff %}
+                                            <button class="btn btn-sm btn-primary mb-1" data-delivery-id="{{ delivery.id }}" onclick="pickupOrder(this.dataset.deliveryId)" title="Olib ketish">
+                                                <i class="fas fa-box"></i> Olish
+                                            </button>
+                                        {% elif delivery.status == 'picked_up' and delivery.courier == user.courierstaff %}
+                                            <button class="btn btn-sm btn-warning mb-1" data-delivery-id="{{ delivery.id }}" onclick="startDelivery(this.dataset.deliveryId)" title="Yetkazishni boshlash">
+                                                <i class="fas fa-shipping-fast"></i> Yo'lga
+                                            </button>
+                                        {% elif delivery.status == 'on_way' and delivery.courier == user.courierstaff %}
+                                            <button class="btn btn-sm btn-success" data-delivery-id="{{ delivery.id }}" onclick="completeDelivery(this.dataset.deliveryId)" title="Yetkazildi">
+                                                <i class="fas fa-check"></i> Tugallash
+                                            </button>
+                                        {% elif delivery.status == 'delivered' %}
+                                            <span class="badge bg-success">Yetkazilgan</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-truck fa-4x text-muted"></i>
+                <h4 class="mt-3 text-muted">Yetkazib berishlar yo'q</h4>
+                <p class="text-muted">Hozircha yetkazib berishlar mavjud emas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+function toggleAvailability() {
+    fetch('/courier/toggle-availability/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Xatolik yuz berdi: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Xatolik yuz berdi');
+    });
+}
+
+function takeOrder(deliveryId) {
+    if (confirm('Bu buyurtmani qabul qilasizmi?')) {
+        fetch(`/courier/take-order/${deliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+function pickupOrder(deliveryId) {
+    if (confirm('Buyurtmani oshxonadan oldingizmi?')) {
+        fetch(`/courier/pickup-order/${deliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+function startDelivery(deliveryId) {
+    if (confirm('Yetkazishni boshlaysizmi?')) {
+        fetch(`/courier/start-delivery/${deliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+function completeDelivery(deliveryId) {
+    if (confirm('Buyurtma yetkazildi deb belgilaysizmi?')) {
+        fetch(`/courier/complete-delivery/${deliveryId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+{% endblock %}

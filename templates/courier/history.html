@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Yetkazish tarixi{% endblock %}
+
+{% block sidebar %}
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'courier:dashboard' %}">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'courier:deliveries' %}">
+                    <i class="fas fa-truck"></i> Yetkazib berishlar
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'courier:history' %}">
+                    <i class="fas fa-history"></i> Tarix
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-history"></i> Yetkazish tarixi</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync"></i> Yangilash
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Bugun</h5>
+                        <h3>{{ today_count }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Bu hafta</h5>
+                        <h3>{{ week_count }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-week fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Bu oy</h5>
+                        <h3>{{ month_count }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Jami</h5>
+                        <h3>{{ total_count }}</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter buttons -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <a href="{% url 'courier:history' %}" class="btn btn-outline-primary {% if not period_filter %}active{% endif %}">
+                <i class="fas fa-list"></i> Barchasi
+            </a>
+            <a href="{% url 'courier:history' %}?period=today" class="btn btn-outline-info {% if period_filter == 'today' %}active{% endif %}">
+                <i class="fas fa-calendar-day"></i> Bugun
+            </a>
+            <a href="{% url 'courier:history' %}?period=week" class="btn btn-outline-success {% if period_filter == 'week' %}active{% endif %}">
+                <i class="fas fa-calendar-week"></i> Bu hafta
+            </a>
+            <a href="{% url 'courier:history' %}?period=month" class="btn btn-outline-warning {% if period_filter == 'month' %}active{% endif %}">
+                <i class="fas fa-calendar-alt"></i> Bu oy
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- History List -->
+<div class="card">
+    <div class="card-body">
+        {% if deliveries %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Buyurtma</th>
+                            <th>Mijoz</th>
+                            <th>Manzil</th>
+                            <th>Mahsulotlar</th>
+                            <th>Vaqtlar</th>
+                            <th>Summa</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for delivery in deliveries %}
+                            <tr>
+                                <td><strong>#{{ delivery.order.id }}</strong></td>
+                                <td>
+                                    <i class="fas fa-user"></i> {{ delivery.order.user.get_display_name }}
+                                    <br><small class="text-muted">{{ delivery.order.phone_number }}</small>
+                                </td>
+                                <td>
+                                    <i class="fas fa-map-marker-alt"></i> {{ delivery.order.dormitory.name }}
+                                    <br><small class="text-muted">Xona: {{ delivery.order.room_number }}</small>
+                                    {% if delivery.delivery_address %}
+                                        <br><small class="text-info">{{ delivery.delivery_address }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for item in delivery.order.orderitem_set.all %}
+                                        <small>{{ item.quantity }}x {{ item.product.name }}</small><br>
+                                    {% empty %}
+                                        <small class="text-muted">Ma'lumot yo'q</small>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <small><strong>Buyurtma:</strong> {{ delivery.order.created_at|date:"d.m.Y H:i" }}</small><br>
+                                    {% if delivery.assigned_at %}
+                                        <small><strong>Biriktirilgan:</strong> {{ delivery.assigned_at|date:"H:i" }}</small><br>
+                                    {% endif %}
+                                    {% if delivery.picked_up_at %}
+                                        <small><strong>Olingan:</strong> {{ delivery.picked_up_at|date:"H:i" }}</small><br>
+                                    {% endif %}
+                                    {% if delivery.delivered_at %}
+                                        <small><strong>Yetkazilgan:</strong> {{ delivery.delivered_at|date:"H:i" }}</small><br>
+                                        {% if delivery.picked_up_at and delivery.delivered_at %}
+                                            {% with delivery_time=delivery.delivered_at|timesince:delivery.picked_up_at %}
+                                                <small class="text-success"><strong>Vaqt:</strong> {{ delivery_time }}</small>
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ delivery.order.total_amount|floatformat:0 }} so'm</strong>
+                                    <br><small class="text-muted">{{ delivery.order.orderitem_set.count }} mahsulot</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ delivery.get_status_color }}">
+                                        {{ delivery.get_status_display }}
+                                    </span>
+                                    {% if delivery.status == 'delivered' %}
+                                        <br><small class="text-success"><i class="fas fa-check"></i> Muvaffaqiyatli</small>
+                                    {% elif delivery.status == 'cancelled' %}
+                                        <br><small class="text-danger"><i class="fas fa-times"></i> Bekor qilingan</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination if needed -->
+            {% if deliveries.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if deliveries.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ deliveries.previous_page_number }}{% if period_filter %}&period={{ period_filter }}{% endif %}">Oldingi</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in deliveries.paginator.page_range %}
+                            {% if deliveries.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > deliveries.number|add:'-3' and num < deliveries.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if period_filter %}&period={{ period_filter }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if deliveries.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ deliveries.next_page_number }}{% if period_filter %}&period={{ period_filter }}{% endif %}">Keyingi</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-history fa-4x text-muted"></i>
+                <h4 class="mt-3 text-muted">Tarix bo'sh</h4>
+                <p class="text-muted">Hozircha yetkazish tarixi mavjud emas.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+// Auto-refresh every 60 seconds for history page
+setInterval(function() {
+    location.reload();
+}, 60000);
+{% endblock %}

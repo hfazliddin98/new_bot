@@ -1,0 +1,287 @@
+{% extends 'kitchen/base.html' %}
+
+{% block title %}Oshxona Dashboard - {{ block.super }}{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-utensils"></i> Oshxona Dashboard</h2>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">
+                        <i class="fas fa-sync"></i> Yangilash
+                    </button>
+                    <a href="{% url 'kitchen:live_orders' %}" class="btn btn-primary">
+                        <i class="fas fa-clock"></i> Jonli Monitor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buyurtmalar statistikasi -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ stats.new_orders }}</h3>
+                            <p class="mb-0">Yangi buyurtmalar</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ stats.preparing_orders }}</h3>
+                            <p class="mb-0">Tayyorlanmoqda</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-fire fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ stats.ready_orders }}</h3>
+                            <p class="mb-0">Tayyor</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1">{{ stats.today_total }}</h3>
+                            <p class="mb-0">Bugungi jami</p>
+                        </div>
+                        <div>
+                            <i class="fas fa-chart-bar fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mahsulotlar statistikasi -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-tags fa-2x mb-2"></i>
+                    <h4>{{ categories_count }}</h4>
+                    <p class="mb-0">Kategoriyalar</p>
+                    <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-light btn-sm mt-2">
+                        <i class="fas fa-eye"></i> Ko'rish
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-box fa-2x mb-2"></i>
+                    <h4>{{ products_count }}</h4>
+                    <p class="mb-0">Mahsulotlar</p>
+                    <a href="{% url 'kitchen:manage_products' %}" class="btn btn-light btn-sm mt-2">
+                        <i class="fas fa-eye"></i> Ko'rish
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus fa-2x mb-2"></i>
+                    <h4>Qo'shish</h4>
+                    <p class="mb-0">Yangi element</p>
+                    <div class="btn-group mt-2">
+                        <a href="{% url 'kitchen:add_product' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus"></i> Mahsulot
+                        </a>
+                        <a href="{% url 'kitchen:add_category' %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-plus"></i> Kategoriya
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- So'nggi buyurtmalar -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list"></i> So'nggi buyurtmalar
+                <a href="{% url 'kitchen:orders' %}" class="btn btn-sm btn-outline-primary float-end">
+                    <i class="fas fa-eye"></i> Barchasini ko'rish
+                </a>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if recent_orders %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Mijoz</th>
+                            <th>Mahsulotlar</th>
+                            <th>Holat</th>
+                            <th>Vaqt</th>
+                            <th>Summa</th>
+                            <th>Amal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td><strong>#{{ order.id }}</strong></td>
+                            <td>
+                                <i class="fas fa-user"></i> {{ order.user.get_display_name }}
+                                <br><small class="text-muted">{{ order.delivery_address }}</small>
+                            </td>
+                            <td>
+                                {% for item in order.items.all %}
+                                <small>{{ item.quantity }}x {{ item.product.name }}</small><br>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% with progress=order.orderprogress %}
+                                {% if not progress %}
+                                    <span class="badge bg-danger">Yangi</span>
+                                {% elif progress.status == 'preparing' %}
+                                    <span class="badge bg-primary">Tayyorlanmoqda</span>
+                                {% elif progress.status == 'ready' %}
+                                    <span class="badge bg-success">Tayyor</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ progress.get_status_display }}</span>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                <small>{{ order.created_at|date:"H:i" }}</small>
+                                <br><small class="text-muted">{{ order.created_at|date:"d.m.Y" }}</small>
+                            </td>
+                            <td>
+                                <strong class="text-success">{{ order.total_amount|floatformat:0 }} so'm</strong>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'kitchen:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% with progress=order.orderprogress %}
+                                    {% if not progress %}
+                                        <button class="btn btn-sm btn-success" data-order-id="{{ order.id }}" data-action="start">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-clipboard-list fa-3x text-muted"></i>
+                <p class="mt-3 text-muted">Hozircha buyurtmalar yo'q</p>
+                <a href="{% url 'kitchen:live_orders' %}" class="btn btn-primary">
+                    <i class="fas fa-clock"></i> Jonli monitorga o'tish
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// CSRF token olish funksiyasi
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// Alert ko'rsatish funksiyasi
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+    
+    // 3 soniyadan keyin avtomatik yashirish
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 3000);
+}
+
+// Order boshlash tugmasini event listener orqali
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-action="start"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            if (confirm('Buyurtmani tayyorlashni boshlaysizmi?')) {
+                fetch(`/kitchen/start-order/${orderId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Buyurtma tayyorlash boshlandi!', 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showAlert('Xatolik: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Xatolik yuz berdi', 'error');
+                });
+            }
+        });
+    });
+});
+
+// 30 soniyada bir avtomatik yangilash
+setInterval(function() {
+    // Faqat sahifa ko'rinayotgan bo'lsa yangilansin
+    if (!document.hidden) {
+        location.reload();
+    }
+}, 30000);
+</script>
+{% endblock %}
