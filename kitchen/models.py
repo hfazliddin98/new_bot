@@ -1,10 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from bot.models import Order, OrderItem
+
+User = get_user_model()
 
 class KitchenStaff(models.Model):
     """Oshxona xodimlari modeli"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
     full_name = models.CharField(max_length=200, verbose_name="To'liq ism")
     phone_number = models.CharField(max_length=20, verbose_name="Telefon raqam")
     position = models.CharField(max_length=100, default="Oshpaz", verbose_name="Lavozim")

@@ -1,0 +1,69 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="name">Yotoqxona nomi</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ dormitory.name }}" required>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="address">To'liq manzil</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required>{{ dormitory.address }}</textarea>
+                        </div>
+                        
+
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="contact_person">Mas'ul shaxs</label>
+                                    <input type="text" class="form-control" id="contact_person" name="contact_person" value="{{ dormitory.contact_person }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="contact_phone">Telefon raqam</label>
+                                    <input type="text" class="form-control" id="contact_phone" name="contact_phone" value="{{ dormitory.contact_phone }}" placeholder="+998901234567">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="notes">Qo'shimcha ma'lumot</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2">{{ dormitory.notes }}</textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_active" name="is_active" {% if dormitory.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    Faol
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group d-flex justify-content-between">
+                            <a href="{% url 'admin_panel:dormitories_list' %}" class="btn btn-secondary">Orqaga</a>
+                            <button type="submit" class="btn btn-success">Yangilash</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

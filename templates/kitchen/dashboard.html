@@ -24,65 +24,81 @@
     <!-- Buyurtmalar statistikasi -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ stats.new_orders }}</h3>
-                            <p class="mb-0">Yangi buyurtmalar</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-exclamation-circle fa-2x"></i>
-                        </div>
+            <div class="card stats-card bg-gradient-danger border-0 fade-in">
+                <div class="card-body text-center">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-exclamation-circle fa-3x"></i>
                     </div>
+                    <div class="stats-number" data-target="{{ stats.new_orders }}">0</div>
+                    <div class="stats-label">Yangi buyurtmalar</div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'kitchen:orders' %}?status=new" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>Ko'rish
+                    </a>
                 </div>
             </div>
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ stats.preparing_orders }}</h3>
-                            <p class="mb-0">Tayyorlanmoqda</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-fire fa-2x"></i>
-                        </div>
+            <div class="card stats-card bg-primary border-0 fade-in" style="animation-delay: 0.1s;">
+                <div class="card-body text-center">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-fire fa-3x"></i>
                     </div>
+                    <div class="stats-number" data-target="{{ stats.preparing_orders }}">0</div>
+                    <div class="stats-label">Tayyorlanmoqda</div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-white" role="progressbar" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'kitchen:preparing' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>Ko'rish
+                    </a>
                 </div>
             </div>
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ stats.ready_orders }}</h3>
-                            <p class="mb-0">Tayyor</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
+            <div class="card stats-card bg-success border-0 fade-in" style="animation-delay: 0.2s;">
+                <div class="card-body text-center">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-check-circle fa-3x"></i>
                     </div>
+                    <div class="stats-number" data-target="{{ stats.ready_orders }}">0</div>
+                    <div class="stats-label">Tayyor</div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-white" role="progressbar" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'kitchen:ready' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>Ko'rish
+                    </a>
                 </div>
             </div>
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ stats.today_total }}</h3>
-                            <p class="mb-0">Bugungi jami</p>
-                        </div>
-                        <div>
-                            <i class="fas fa-chart-bar fa-2x"></i>
-                        </div>
+            <div class="card stats-card bg-info border-0 fade-in" style="animation-delay: 0.3s;">
+                <div class="card-body text-center">
+                    <div class="stats-icon mb-3">
+                        <i class="fas fa-chart-bar fa-3x"></i>
                     </div>
+                    <div class="stats-number" data-target="{{ stats.today_total }}">0</div>
+                    <div class="stats-label">Bugungi jami</div>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-white" role="progressbar" style="width: 60%"></div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'kitchen:orders' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-right me-1"></i>Ko'rish
+                    </a>
                 </div>
             </div>
         </div>
@@ -90,42 +106,56 @@
 
     <!-- Mahsulotlar statistikasi -->
     <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-tags fa-2x mb-2"></i>
-                    <h4>{{ categories_count }}</h4>
-                    <p class="mb-0">Kategoriyalar</p>
-                    <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-light btn-sm mt-2">
-                        <i class="fas fa-eye"></i> Ko'rish
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm slide-in-right">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-tags fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-warning mb-2">{{ categories_count }}</h3>
+                    <p class="text-muted mb-3">Kategoriyalar</p>
+                    <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-warning btn-sm rounded-pill px-4">
+                        <i class="fas fa-eye me-1"></i>Ko'rish
                     </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-secondary text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-box fa-2x mb-2"></i>
-                    <h4>{{ products_count }}</h4>
-                    <p class="mb-0">Mahsulotlar</p>
-                    <a href="{% url 'kitchen:manage_products' %}" class="btn btn-light btn-sm mt-2">
-                        <i class="fas fa-eye"></i> Ko'rish
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card h-100 border-0 shadow-sm slide-in-right" style="animation-delay: 0.1s;">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-box fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold text-info mb-2">{{ products_count }}</h3>
+                    <p class="text-muted mb-3">Mahsulotlar</p>
+                    <a href="{% url 'kitchen:manage_products' %}" class="btn btn-info btn-sm rounded-pill px-4">
+                        <i class="fas fa-eye me-1"></i>Ko'rish
                     </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-dark text-white">
-                <div class="card-body text-center">
-                    <i class="fas fa-plus fa-2x mb-2"></i>
-                    <h4>Qo'shish</h4>
-                    <p class="mb-0">Yangi element</p>
-                    <div class="btn-group mt-2">
-                        <a href="{% url 'kitchen:add_product' %}" class="btn btn-success btn-sm">
-                            <i class="fas fa-plus"></i> Mahsulot
+        
+        <div class="col-lg-4 col-md-12 mb-3">
+            <div class="card h-100 border-0 shadow-sm slide-in-right" style="animation-delay: 0.2s;">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <div class="bg-secondary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-plus fa-2x text-secondary"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold text-secondary mb-2">Yangi qo'shish</h5>
+                    <p class="text-muted mb-3">Element yaratish</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{% url 'kitchen:add_product' %}" class="btn btn-success btn-sm rounded-pill px-3">
+                            <i class="fas fa-plus me-1"></i>Mahsulot
                         </a>
-                        <a href="{% url 'kitchen:add_category' %}" class="btn btn-info btn-sm">
-                            <i class="fas fa-plus"></i> Kategoriya
+                        <a href="{% url 'kitchen:add_category' %}" class="btn btn-primary btn-sm rounded-pill px-3">
+                            <i class="fas fa-plus me-1"></i>Kategoriya
                         </a>
                     </div>
                 </div>
@@ -223,34 +253,106 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
 // CSRF token olish funksiyasi
 function getCSRFToken() {
     return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-// Alert ko'rsatish funksiyasi
-function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.container-fluid').firstChild);
+// Zamonaviy toast notification
+function showToast(message, type = 'success') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
     
-    // 3 soniyadan keyin avtomatik yashirish
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 3000);
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `toast align-items-center text-bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+    });
 }
 
-// Order boshlash tugmasini event listener orqali
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Animated counter funksiyasi
+function animateNumbers() {
+    document.querySelectorAll('.stats-number[data-target]').forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000;
+        const start = 0;
+        const increment = target / (duration / 16);
+        let current = start;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            counter.textContent = Math.floor(current);
+        }, 16);
+    });
+}
+
+// Smooth scroll
+function smoothScroll(target) {
+    document.querySelector(target).scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+// Loading state funksiyasi
+function setLoading(button, isLoading) {
+    if (isLoading) {
+        button.disabled = true;
+        button.innerHTML = '<span class="loading-spinner me-2"></span>Yuklanmoqda...';
+    } else {
+        button.disabled = false;
+        button.innerHTML = button.getAttribute('data-original-text');
+    }
+}
+
+// Order actions
 document.addEventListener('DOMContentLoaded', function() {
+    // Animated numbers ishga tushirish
+    setTimeout(animateNumbers, 500);
+    
+    // Order start buttons
     document.querySelectorAll('[data-action="start"]').forEach(button => {
+        button.setAttribute('data-original-text', button.innerHTML);
+        
         button.addEventListener('click', function() {
             const orderId = this.dataset.orderId;
-            if (confirm('Buyurtmani tayyorlashni boshlaysizmi?')) {
+            
+            // Modern confirmation dialog
+            if (confirm('🔥 Buyurtmani tayyorlashni boshlaysizmi?\n\nBu buyurtma "Tayyorlanmoqda" holatiga o\'tadi.')) {
+                setLoading(this, true);
+                
                 fetch(`/kitchen/start-order/${orderId}/`, {
                     method: 'POST',
                     headers: {
@@ -260,28 +362,114 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    setLoading(this, false);
+                    
                     if (data.success) {
-                        showAlert('Buyurtma tayyorlash boshlandi!', 'success');
-                        setTimeout(() => location.reload(), 1500);
+                        showToast('✅ Buyurtma tayyorlash muvaffaqiyatli boshlandi!', 'success');
+                        
+                        // Row'ni yangilash animatsiyasi
+                        const row = this.closest('tr');
+                        row.style.backgroundColor = '#d4edda';
+                        
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
                     } else {
-                        showAlert('Xatolik: ' + data.message, 'error');
+                        showToast('❌ Xatolik: ' + data.message, 'danger');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    showAlert('Xatolik yuz berdi', 'error');
+                    setLoading(this, false);
+                    showToast('❌ Tarmoq xatosi. Qaytadan urinib ko\'ring.', 'danger');
                 });
             }
         });
     });
+    
+    // Auto refresh with visibility check
+    let refreshInterval;
+    
+    function startAutoRefresh() {
+        refreshInterval = setInterval(() => {
+            if (!document.hidden && !document.querySelector('.modal.show')) {
+                // Smooth reload indicator
+                const refreshBtn = document.querySelector('[onclick="location.reload()"]');
+                if (refreshBtn) {
+                    refreshBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Yangilanmoqda...';
+                }
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }, 45000); // 45 soniya
+    }
+    
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    }
+    
+    // Visibility change handling
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    });
+    
+    // Start auto refresh
+    startAutoRefresh();
+    
+    // Performance monitoring
+    window.addEventListener('load', function() {
+        const loadTime = performance.now();
+        console.log(`📊 Dashboard loaded in ${Math.round(loadTime)}ms`);
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl + R - Refresh
+        if (e.ctrlKey && e.key === 'r') {
+            e.preventDefault();
+            location.reload();
+        }
+        
+        // Ctrl + L - Live orders
+        if (e.ctrlKey && e.key === 'l') {
+            e.preventDefault();
+            window.location.href = '{% url "kitchen:live_orders" %}';
+        }
+    });
+    
+    // Add hover effects
+    document.querySelectorAll('.stats-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // Table row hover enhancement
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(102, 126, 234, 0.08)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
 });
 
-// 30 soniyada bir avtomatik yangilash
-setInterval(function() {
-    // Faqat sahifa ko'rinayotgan bo'lsa yangilansin
-    if (!document.hidden) {
-        location.reload();
-    }
-}, 30000);
+// Expose functions globally for inline usage
+window.showToast = showToast;
+window.smoothScroll = smoothScroll;
 </script>
 {% endblock %}

@@ -1,66 +1,51 @@
-{% extends 'base.html' %}
+{% extends 'courier/base.html' %}
 
-{% block title %}Kuryer dashboard{% endblock %}
-
-{% block sidebar %}
-<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-    <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'courier:dashboard' %}">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'courier:deliveries' %}">
-                    <i class="fas fa-truck"></i> Yetkazib berishlar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'courier:history' %}">
-                    <i class="fas fa-history"></i> Tarix
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-{% endblock %}
+{% block title %}Kuryer Dashboard - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-motorcycle"></i> Kuryer Dashboard</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
-                <i class="fas fa-sync"></i> Yangilash
-            </button>
-            <button type="button" class="btn btn-sm btn-success" id="availabilityBtn" onclick="toggleAvailability()">
-                <i class="fas fa-toggle-{{ courier.is_available|yesno:'on,off' }}"></i> 
-                {{ courier.is_available|yesno:'Mavjud,Mavjud emas' }}
-            </button>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>
+                    <i class="fas fa-motorcycle me-2"></i>
+                    Kuryer Dashboard
+                </h1>
+                <p>Yetkazib berish xizmatlari boshqaruv paneli</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="location.reload()">
+                    <i class="fas fa-sync me-2"></i> Yangilash
+                </button>
+                <button type="button" class="btn btn-success" id="availabilityBtn" onclick="toggleAvailability()">
+                    <i class="fas fa-toggle-{{ user.courierstaff.is_available|yesno:'on,off' }} me-2"></i> 
+                    {{ user.courierstaff.is_available|yesno:'Mavjud,Mavjud emas' }}
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-xl-3 col-md-6 mb-3">
+    <div class="col-xl-3 col-lg-6 mb-3">
         <div class="card stats-card h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h3 class="mb-1 text-white">{{ stats.ready_orders }}</h3>
-                        <p class="mb-0 text-light">Kutayotgan</p>
+                        <p class="mb-0 text-light">Tayyor buyurtmalar</p>
                     </div>
                     <div>
-                        <i class="fas fa-box fa-2x text-white"></i>
+                        <i class="fas fa-box fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6 mb-3">
+    <div class="col-xl-3 col-lg-6 mb-3">
         <div class="card stats-card-info h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -69,14 +54,14 @@
                         <p class="mb-0 text-light">Yo'lda</p>
                     </div>
                     <div>
-                        <i class="fas fa-route fa-2x text-white"></i>
+                        <i class="fas fa-route fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6 mb-3">
+    <div class="col-xl-3 col-lg-6 mb-3">
         <div class="card stats-card-success h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -85,40 +70,23 @@
                         <p class="mb-0 text-light">Bugun yetkazildi</p>
                     </div>
                     <div>
-                        <i class="fas fa-check-circle fa-2x text-white"></i>
+                        <i class="fas fa-check-circle fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6 mb-3">
+    <div class="col-xl-3 col-lg-6 mb-3">
         <div class="card stats-card-warning h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-1 text-white">{{ stats.total_today }}</h3>
-                        <p class="mb-0 text-light">Bugungi jami</p>
-                    </div>
-                    <div>
-                        <i class="fas fa-chart-bar fa-2x text-white"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-    
-    <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card stat-card h-100">
-            <div class="card-body text-center">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
                         <h3 class="mb-1 text-white">{{ stats.total_earnings|floatformat:0 }}</h3>
-                        <p class="mb-0 small text-light">Umumiy daromad (so'm)</p>
+                        <p class="mb-0 text-light">Umumiy daromad (so'm)</p>
                     </div>
-                    <div class="animated-icon">
-                        <i class="fas fa-money-bill-wave fa-2x opacity-75 text-white"></i>
+                    <div>
+                        <i class="fas fa-money-bill-wave fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
@@ -225,98 +193,158 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
 function toggleAvailability() {
+    const btn = document.getElementById('availabilityBtn');
+    setButtonLoading(btn, true);
+    
     fetch('/courier/toggle-availability/', {
         method: 'POST',
         headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-CSRFToken': getCookie('csrftoken'),
             'Content-Type': 'application/json',
         },
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showSuccessToast('Status muvaffaqiyatli o\'zgartirildi');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showErrorToast(data.message || 'Xatolik yuz berdi');
+            setButtonLoading(btn, false);
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorToast('Xatolik yuz berdi');
+        setButtonLoading(btn, false);
     });
 }
 
 function takeOrder(orderId) {
-    if (confirm('Bu buyurtmani olasizmi?')) {
+    if (confirm('Bu buyurtmani qabul qilasizmi?')) {
+        const btn = event.target;
+        setButtonLoading(btn, true);
+        
         fetch(`/courier/take-order/${orderId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showSuccessToast('Buyurtma muvaffaqiyatli qabul qilindi');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Xatolik: ' + data.message);
+                showErrorToast(data.message || 'Xatolik yuz berdi');
+                setButtonLoading(btn, false);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Xatolik yuz berdi');
+            setButtonLoading(btn, false);
         });
     }
 }
 
 function pickupOrder(deliveryId) {
-    if (confirm('Buyurtmani oldingizmi?')) {
+    if (confirm('Buyurtmani oshxonadan oldingizmi?')) {
+        const btn = event.target;
+        setButtonLoading(btn, true);
+        
         fetch(`/courier/pickup-order/${deliveryId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showSuccessToast('Buyurtma muvaffaqiyatli olindi');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showErrorToast(data.message || 'Xatolik yuz berdi');
+                setButtonLoading(btn, false);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Xatolik yuz berdi');
+            setButtonLoading(btn, false);
         });
     }
 }
 
 function startDelivery(deliveryId) {
-    if (confirm('Yetkazib berishni boshlaysizmi?')) {
+    if (confirm('Yetkazishni boshlaysizmi?')) {
+        const btn = event.target;
+        setButtonLoading(btn, true);
+        
         fetch(`/courier/start-delivery/${deliveryId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showSuccessToast('Yetkazish boshlandi');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showErrorToast(data.message || 'Xatolik yuz berdi');
+                setButtonLoading(btn, false);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Xatolik yuz berdi');
+            setButtonLoading(btn, false);
         });
     }
 }
 
 function completeDelivery(deliveryId) {
-    if (confirm('Buyurtma yetkazib berildimi?')) {
+    if (confirm('Buyurtma yetkazildi deb belgilaysizmi?')) {
+        const btn = event.target;
+        setButtonLoading(btn, true);
+        
         fetch(`/courier/complete-delivery/${deliveryId}/`, {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json',
             },
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showSuccessToast('Buyurtma muvaffaqiyatli yetkazildi');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showErrorToast(data.message || 'Xatolik yuz berdi');
+                setButtonLoading(btn, false);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showErrorToast('Xatolik yuz berdi');
+            setButtonLoading(btn, false);
         });
     }
 }
 
 // Auto-refresh every 30 seconds
-setInterval(function() {
-    location.reload();
-}, 30000);
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh(30000);
+});
+</script>
 {% endblock %}

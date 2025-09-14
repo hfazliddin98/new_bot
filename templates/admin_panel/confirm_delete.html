@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> {{ title }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-warning"></i>
+                        <strong>Diqqat!</strong> Bu amalni bekor qilib bo'lmaydi.
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Siz rostdan ham quyidagi {{ staff_type }}ni o'chirmoqchimisiz?</h5>
+                        
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>To'liq ism:</strong><br>
+                                        {{ staff.full_name }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Foydalanuvchi nomi:</strong><br>
+                                        {{ staff.user.username }}
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-6">
+                                        <strong>Telefon:</strong><br>
+                                        {{ staff.phone_number }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Status:</strong><br>
+                                        {% if staff.is_active %}
+                                            <span class="badge bg-success">Faol</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Nofaol</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if staff_type == 'oshpaz' %}
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Lavozim:</strong><br>
+                                            {{ staff.position }}
+                                        </div>
+                                    </div>
+                                {% elif staff_type == 'kuryer' %}
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <strong>Transport:</strong><br>
+                                            {{ staff.get_vehicle_type_display }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Transport:</strong><br>
+                                            <span class="badge bg-info">{{ staff.vehicle_type|default:"Piyoda" }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{% url 'admin_panel:staff_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Bekor qilish
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Ha, o'chirish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

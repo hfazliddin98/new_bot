@@ -1,0 +1,103 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building"></i> {{ title }}
+                    </h5>
+                    <a href="{% url 'admin_panel:add_dormitory' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> Yotoqxona qo'shish
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if dormitories %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nomi</th>
+                                        <th>Manzil</th>
+                                        <th>Yetkazish haqi</th>
+                                        <th>Yetkazish vaqti</th>
+                                        <th>Ish vaqti</th>
+                                        <th>Mas'ul shaxs</th>
+                                        <th>Status</th>
+                                        <th>Amallar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dormitory in dormitories %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-building text-info me-2"></i>
+                                            {{ dormitory.name }}
+                                        </td>
+                                        <td>{{ dormitory.address|truncatechars:50 }}</td>
+                                        <td>
+                                            {% if dormitory.delivery_fee > 0 %}
+                                                <span class="badge bg-warning">{{ dormitory.delivery_fee|floatformat:0 }} so'm</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Bepul</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ dormitory.delivery_time }} daq</span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ dormitory.get_working_hours_display }}</small>
+                                        </td>
+                                        <td>
+                                            {{ dormitory.contact_person|default:"—" }}
+                                            {% if dormitory.contact_phone %}
+                                                <br><small class="text-muted">{{ dormitory.contact_phone }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if dormitory.is_active %}
+                                                <span class="badge bg-success">Faol</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Nofaol</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_panel:edit_dormitory' dormitory.id %}" class="btn btn-sm btn-primary me-1">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'admin_panel:delete_dormitory' dormitory.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-building fa-4x mb-3"></i>
+                            <h4>Hozircha yotoqxonalar ro'yxati bo'sh</h4>
+                            <p>Birinchi yotoqxonani qo'shish uchun yuqoridagi "Yotoqxona qo'shish" tugmasini bosing</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Dashboardga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

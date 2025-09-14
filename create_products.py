@@ -87,7 +87,6 @@ def create_test_data():
                 defaults={
                     'description': prod_data["description"],
                     'price': Decimal(str(prod_data["price"])),
-                    'is_active': True,
                     'is_available': True
                 }
             )

@@ -6,6 +6,7 @@ import json
 import telebot
 from .models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem
 from .bot_handlers import handle_telegram_update
+from users.decorators import admin_required
 
 # Bot instanceni yaratish
 bot = telebot.TeleBot(settings.TELEGRAM_BOT_TOKEN)
@@ -35,6 +36,7 @@ def set_webhook(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
 
+@admin_required
 def bot_stats(request):
     """Bot statistikasi"""
     total_users = TelegramUser.objects.count()

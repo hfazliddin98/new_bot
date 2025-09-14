@@ -10,7 +10,14 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+DOMEN = 'dastavka.pythonanywhere.com'
+# DOMEN = 'apiombor.kspi.uz'
+LOCAL_DOMEN = '127.0.0.1'
+
+ALLOWED_HOSTS = ['.kokanddeveloper.uz', DOMEN, 'localhost', LOCAL_DOMEN]
+CSRF_TRUSTED_ORIGINS=[f'https://{DOMEN}', f'http://{DOMEN}']
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -19,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users.apps.UsersConfig',  # Custom User model
     'bot.apps.BotConfig',  # Telegram bot uchun app - AppConfig bilan
     'kitchen',  # Oshxona uchun app
     'courier',  # Kuryer uchun app
@@ -30,6 +38,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'users.middleware.RoleBasedAccessMiddleware',
+    'users.middleware.LoginRedirectMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -93,6 +103,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Telegram Bot sozlamalari
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7305057883:AAG1iuNZK8dIhHXzTS_LV1dlMBneguVJW2Q')
+
+# Custom User Model
+AUTH_USER_MODEL = 'users.User'
 
 # Login/Logout URLs
 LOGIN_URL = '/accounts/login/'

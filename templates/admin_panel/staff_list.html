@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Xodimlar ro'yxati - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-users"></i> Barcha xodimlar 
+            </h1>
+        </div>
+    </div>
+
+    <!-- All Staff Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> Xodimlar ro'yxati
+                    </h5>
+                    <a href="{% url 'admin_panel:add_staff' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> Xodim qo'shish
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if kitchen_staff or courier_staff %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>To'liq ismi</th>
+                                        <th>Telefon</th>
+                                        <th>Turi</th>
+                                        <th>Ma'lumotlar</th>
+                                        <th>Status</th>
+                                        <th>Amallar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Oshpazlar -->
+                                    {% for staff in kitchen_staff %}
+                                    <tr>
+                                        <td>{{ staff.user.username }}</td>
+                                        <td>
+                                            <i class="fas fa-utensils text-success me-2"></i>
+                                            {{ staff.full_name }}
+                                        </td>
+                                        <td>{{ staff.phone_number }}</td>
+                                        <td><span class="badge bg-success">Oshpaz</span></td>
+                                        <td>{{ staff.position }}</td>
+                                        <td>
+                                            {% if staff.user.is_active %}
+                                                <span class="badge bg-success">Faol</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Nofaol</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_panel:edit_staff' 'kitchen' staff.id %}" class="btn btn-sm btn-primary me-1">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'admin_panel:delete_kitchen_staff' staff.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    
+                                    <!-- Kuryerlar -->
+                                    {% for staff in courier_staff %}
+                                    <tr>
+                                        <td>{{ staff.user.username }}</td>
+                                        <td>
+                                            <i class="fas fa-motorcycle text-info me-2"></i>
+                                            {{ staff.full_name }}
+                                        </td>
+                                        <td>{{ staff.phone_number }}</td>
+                                        <td><span class="badge bg-info">Kuryer</span></td>
+                                        <td>
+                                            <span class="badge bg-info">{{ staff.vehicle_type|default:"Piyoda" }}</span>
+                                        </td>
+                                        <td>
+                                            {% if staff.user.is_active %}
+                                                <span class="badge bg-success">Faol</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Nofaol</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'admin_panel:edit_staff' 'courier' staff.id %}" class="btn btn-sm btn-primary me-1">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'admin_panel:delete_courier_staff' staff.id %}" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-users fa-4x mb-3"></i>
+                            <h4>Hozircha xodimlar ro'yxati bo'sh</h4>
+                            <p>Birinchi xodimni qo'shish uchun yuqoridagi "Xodim qo'shish" tugmasini bosing</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="row">
+        <div class="col-12">
+            <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Dashboardga qaytish
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

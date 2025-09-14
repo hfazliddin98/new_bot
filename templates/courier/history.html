@@ -1,100 +1,85 @@
-{% extends 'base.html' %}
+{% extends 'courier/base.html' %}
 
-{% block title %}Yetkazish tarixi{% endblock %}
-
-{% block sidebar %}
-<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-    <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'courier:dashboard' %}">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'courier:deliveries' %}">
-                    <i class="fas fa-truck"></i> Yetkazib berishlar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'courier:history' %}">
-                    <i class="fas fa-history"></i> Tarix
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-{% endblock %}
+{% block title %}Yetkazish tarixi - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-history"></i> Yetkazish tarixi</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
-                <i class="fas fa-sync"></i> Yangilash
-            </button>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>
+                    <i class="fas fa-history me-2"></i>
+                    Yetkazish tarixi
+                </h1>
+                <p>Barcha yetkazib berish buyurtmalari tarixi</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light" onclick="location.reload()">
+                    <i class="fas fa-sync me-2"></i> Yangilash
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Stats Cards -->
+<!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card h-100">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Bugun</h5>
-                        <h3>{{ today_count }}</h3>
+                        <h3 class="mb-1 text-white">{{ today_count }}</h3>
+                        <p class="mb-0 text-light">Bugun</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-calendar-day fa-2x"></i>
+                    <div>
+                        <i class="fas fa-calendar-day fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-success h-100">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Bu hafta</h5>
-                        <h3>{{ week_count }}</h3>
+                        <h3 class="mb-1 text-white">{{ week_count }}</h3>
+                        <p class="mb-0 text-light">Bu hafta</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-calendar-week fa-2x"></i>
+                    <div>
+                        <i class="fas fa-calendar-week fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-info h-100">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Bu oy</h5>
-                        <h3>{{ month_count }}</h3>
+                        <h3 class="mb-1 text-white">{{ month_count }}</h3>
+                        <p class="mb-0 text-light">Bu oy</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-calendar-alt fa-2x"></i>
+                    <div>
+                        <i class="fas fa-calendar-alt fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card-warning h-100">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title">Jami</h5>
-                        <h3>{{ total_count }}</h3>
+                        <h3 class="mb-1 text-white">{{ total_count }}</h3>
+                        <p class="mb-0 text-light">Jami</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-chart-bar fa-2x"></i>
+                    <div>
+                        <i class="fas fa-chart-bar fa-2x text-white opacity-75"></i>
                     </div>
                 </div>
             </div>
@@ -240,8 +225,10 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
 // Auto-refresh every 60 seconds for history page
-setInterval(function() {
-    location.reload();
-}, 60000);
+document.addEventListener('DOMContentLoaded', function() {
+    startAutoRefresh(60000);
+});
+</script>
 {% endblock %}

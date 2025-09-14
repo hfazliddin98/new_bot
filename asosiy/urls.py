@@ -8,29 +8,15 @@ from django.shortcuts import redirect
 def dashboard_redirect(request):
     """Login qilgandan so'ng tegishli dashboardga yo'naltirish"""
     if request.user.is_authenticated:
-        # Oshxona xodimi?
-        try:
-            from kitchen.models import KitchenStaff
-            KitchenStaff.objects.get(user=request.user)
-            return redirect('kitchen:dashboard')
-        except:
-            pass
-        
-        # Kuryer?
-        try:
-            from courier.models import CourierStaff
-            CourierStaff.objects.get(user=request.user)
-            return redirect('courier:dashboard')
-        except:
-            pass
-        
-        # Admin
-        return redirect('admin:index')
+        # User'ning default dashboard URL'ini olish
+        dashboard_url = request.user.get_dashboard_url()
+        return redirect(dashboard_url)
     
     return redirect('login')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('admin-panel/', include('users.urls')),
     path('bot/', include('bot.urls')),
     path('kitchen/', include('kitchen.urls')),
     path('courier/', include('courier.urls')),

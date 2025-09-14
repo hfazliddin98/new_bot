@@ -1,14 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
-from bot.models import Order, DeliveryZone
+from django.contrib.auth import get_user_model
+from bot.models import Order
+
+User = get_user_model()
 
 class CourierStaff(models.Model):
     """Kuryer xodimlari modeli"""
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
     full_name = models.CharField(max_length=200, verbose_name="To'liq ism")
     phone_number = models.CharField(max_length=20, verbose_name="Telefon raqam")
     vehicle_type = models.CharField(max_length=50, default="Piyoda", verbose_name="Transport turi")
-    delivery_zones = models.ManyToManyField(DeliveryZone, blank=True, verbose_name="Yetkazib berish zonalari")
     is_active = models.BooleanField(default=True, verbose_name="Faol")
     is_available = models.BooleanField(default=True, verbose_name="Mavjud")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan vaqt")

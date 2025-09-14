@@ -1,0 +1,115 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}Admin Panel - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 px-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <!-- Sarlavha -->
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="mb-4">Statistika</h2>
+                </div>
+            </div>
+            
+            <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_users }}</h4>
+                            <p class="card-text">Jami foydalanuvchilar</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ kitchen_staff_count }}</h4>
+                            <p class="card-text">Oshpazlar</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-utensils fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ courier_staff_count }}</h4>
+                            <p class="card-text">Kuryerlar</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-motorcycle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ dormitories_count }}</h4>
+                            <p class="card-text">Yotoqxonalar</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-building fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+            <!-- Action Cards -->
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Xodimlar</h5>
+                            <p class="card-text">Barcha xodimlarni ko'rish va boshqarish</p>
+                            <a href="{% url 'admin_panel:staff_list' %}" class="btn btn-primary">
+                                <i class="fas fa-users"></i> Xodimlar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-building fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">Yotoqxonalar</h5>
+                            <p class="card-text">Talabalar yotoqxonalarini boshqarish</p>
+                            <a href="{% url 'admin_panel:dormitories_list' %}" class="btn btn-info">
+                                <i class="fas fa-building"></i> Yotoqxonalar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

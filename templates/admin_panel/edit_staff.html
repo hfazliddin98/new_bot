@@ -1,0 +1,272 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Foydalanuvchi ma'lumotlari -->
+                    <div class="card mb-3">
+                        <div class="card-body bg-light">
+                            <h5 class="card-title">Foydalanuvchi ma'lumotlari</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Username:</strong> {{ staff.user.username }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Telefon:</strong> {{ staff.phone_number|default:"Kiritilmagan" }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Status:</strong> 
+                                    {% if staff.user.is_active %}
+                                        <span class="badge bg-success">Faol</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Nofaol</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" id="staffForm">
+                        {% csrf_token %}
+                        
+                        <!-- Role tanlash (o'qish uchun) -->
+                        <div class="form-group mb-3">
+                            <label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.role.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- User ma'lumotlari -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.username.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Username o'zgartirib bo'lmaydi</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+                                    {{ form.phone_number }}
+                                    {% if form.phone_number.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone_number.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.first_name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.last_name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Parol field lari -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.password1 }}
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('{{ form.password1.id_for_label }}', this)">
+                                            <i class="fa fa-eye" id="toggleIcon1"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password1.help_text %}
+                                        <small class="form-text text-muted">{{ form.password1.help_text }}</small>
+                                    {% endif %}
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.password1.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.password2 }}
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('{{ form.password2.id_for_label }}', this)">
+                                            <i class="fa fa-eye" id="toggleIcon2"></i>
+                                        </button>
+                                    </div>
+                                    {% if form.password2.help_text %}
+                                        <small class="form-text text-muted">{{ form.password2.help_text }}</small>
+                                    {% endif %}
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.password2.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Kuryer uchun qo'shimcha fieldlar -->
+                        <div id="courierFields" style="display: none;">
+                            <hr>
+                            <h5>Kuryer ma'lumotlari</h5>
+                            
+                            <div class="form-group mb-3">
+                                <label for="{{ form.vehicle_type.id_for_label }}">{{ form.vehicle_type.label }}</label>
+                                {{ form.vehicle_type }}
+                                {% if form.vehicle_type.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.vehicle_type.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+
+                        </div>
+                        
+                        <!-- Status -->
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    {{ form.is_active.label }}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group d-flex justify-content-between">
+                            <a href="{% url 'admin_panel:staff_list' %}" class="btn btn-secondary">Orqaga</a>
+                            <button type="submit" class="btn btn-success">Yangilash</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Role o'zgarganda field larni ko'rsatish/yashirish
+document.getElementById('{{ form.role.id_for_label }}').addEventListener('change', function() {
+    const courierFields = document.getElementById('courierFields');
+    if (this.value === 'courier') {
+        courierFields.style.display = 'block';
+    } else {
+        courierFields.style.display = 'none';
+    }
+});
+
+// Parol ko'rsatish/yashirish
+function togglePassword(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    const icon = button.querySelector('i');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        field.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Telefon raqam formatlash
+document.getElementById('{{ form.phone_number.id_for_label }}').addEventListener('input', function(e) {
+    let value = e.target.value;
+    
+    // Faqat raqamlarni qoldirish
+    const numbers = value.replace(/\D/g, '');
+    
+    // +998 prefiksi qo'shish
+    if (numbers.length > 0) {
+        if (numbers.startsWith('998')) {
+            e.target.value = '+' + numbers.substring(0, 12); // 998 + 9 raqam
+        } else if (numbers.startsWith('9')) {
+            e.target.value = '+998' + numbers.substring(0, 9); // 9 raqam
+        } else {
+            e.target.value = '+998' + numbers.substring(0, 9);
+        }
+    }
+});
+
+// Form ikki marta submit qilishni oldini olish
+let formSubmitted = false;
+document.getElementById('staffForm').addEventListener('submit', function(e) {
+    if (formSubmitted) {
+        e.preventDefault();
+        return false;
+    }
+    formSubmitted = true;
+    
+    // Submit tugmasini o'chirish
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Yangalanmoqda...';
+});
+
+// Sahifa yuklanganda role ni tekshirish
+document.addEventListener('DOMContentLoaded', function() {
+    const roleField = document.getElementById('{{ form.role.id_for_label }}');
+    const courierFields = document.getElementById('courierFields');
+    
+    if (roleField.value === 'courier') {
+        courierFields.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

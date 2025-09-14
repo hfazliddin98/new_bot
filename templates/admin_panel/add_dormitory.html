@@ -1,0 +1,121 @@
+{% extends 'admin_panel/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="name">Yotoqxona nomi</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="address">To'liq manzil</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="delivery_fee">Yetkazib berish haqi (so'm)</label>
+                                    <input type="number" class="form-control" id="delivery_fee" name="delivery_fee" value="0" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="delivery_time">Yetkazib berish vaqti (daqiqa)</label>
+                                    <input type="number" class="form-control" id="delivery_time" name="delivery_time" value="30" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="working_hours_start">Ish boshlanish vaqti</label>
+                                    <input type="time" class="form-control" id="working_hours_start" name="working_hours_start" value="09:00">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="working_hours_end">Ish tugash vaqti</label>
+                                    <input type="time" class="form-control" id="working_hours_end" name="working_hours_end" value="23:00">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_24_hours" name="is_24_hours">
+                                <label class="form-check-label" for="is_24_hours">
+                                    24 soat ishlaydi
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="latitude">Kenglik (Latitude)</label>
+                                    <input type="number" step="0.00000001" class="form-control" id="latitude" name="latitude" placeholder="41.311151">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="longitude">Uzunlik (Longitude)</label>
+                                    <input type="number" step="0.00000001" class="form-control" id="longitude" name="longitude" placeholder="69.279737">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="contact_person">Mas'ul shaxs</label>
+                                    <input type="text" class="form-control" id="contact_person" name="contact_person">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="contact_phone">Telefon raqam</label>
+                                    <input type="text" class="form-control" id="contact_phone" name="contact_phone" placeholder="+998901234567">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="notes">Qo'shimcha ma'lumot</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
+                                <label class="form-check-label" for="is_active">
+                                    Faol
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group d-flex justify-content-between">
+                            <a href="{% url 'admin_panel:dormitories_list' %}" class="btn btn-secondary">Orqaga</a>
+                            <button type="submit" class="btn btn-success">Saqlash</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

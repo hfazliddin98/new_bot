@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Oshpaz qo'shish - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-utensils"></i> Yangi oshpaz qo'shish
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user"></i> Foydalanuvchi nomi
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger small">{{ form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                                    <i class="fas fa-phone"></i> Telefon raqami
+                                </label>
+                                {{ form.phone_number }}
+                                <div class="form-text">+998XXXXXXXXX formatida kiriting</div>
+                                {% if form.phone_number.errors %}
+                                    <div class="text-danger small">{{ form.phone_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user"></i> Ismi
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user"></i> Familiyasi
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                    <i class="fas fa-lock"></i> Parol
+                                </label>
+                                <div class="input-group">
+                                    {{ form.password1 }}
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword1">
+                                        <i class="fa fa-eye" id="eyeIcon1"></i>
+                                    </button>
+                                </div>
+                                {% if form.password1.errors %}
+                                    <div class="text-danger small">{{ form.password1.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                    <i class="fas fa-lock"></i> Parolni tasdiqlash
+                                </label>
+                                <div class="input-group">
+                                    {{ form.password2 }}
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword2">
+                                        <i class="fa fa-eye" id="eyeIcon2"></i>
+                                    </button>
+                                </div>
+                                {% if form.password2.errors %}
+                                    <div class="text-danger small">{{ form.password2.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Lavozim avtomatik "Oshpaz" qilib belgilanadi -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Eslatma:</strong> Lavozim avtomatik ravishda "Oshpaz" qilib belgilanadi.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'admin_panel:dashboard' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left"></i> Orqaga
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Oshpazni saqlash
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[name="phone_number"]');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            // +998 bilan boshlanmasa, avtomatik qo'shish
+            if (!value.startsWith('+998') && value.length > 0) {
+                value = '+998' + value.replace(/[^\d]/g, '');
+            }
+            // Maksimal +998XXXXXXXXX (13 ta belgi)
+            if (value.length > 13) {
+                value = value.substring(0, 13);
+            }
+            e.target.value = value;
+        });
+    }
+    
+    // Parol ko'rish tugmalari
+    const togglePassword1 = document.querySelector('#togglePassword1');
+    const togglePassword2 = document.querySelector('#togglePassword2');
+    const passwordField1 = document.querySelector('input[name="password1"]');
+    const passwordField2 = document.querySelector('input[name="password2"]');
+    const eyeIcon1 = document.querySelector('#eyeIcon1');
+    const eyeIcon2 = document.querySelector('#eyeIcon2');
+    
+    if (togglePassword1 && passwordField1) {
+        togglePassword1.addEventListener('click', function() {
+            const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField1.setAttribute('type', type);
+            eyeIcon1.classList.toggle('fa-eye');
+            eyeIcon1.classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    if (togglePassword2 && passwordField2) {
+        togglePassword2.addEventListener('click', function() {
+            const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField2.setAttribute('type', type);
+            eyeIcon2.classList.toggle('fa-eye');
+            eyeIcon2.classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    // Form submit protection - ikkita marta submit qilishni oldini olish
+    const form = document.querySelector('form');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    let isSubmitting = false;
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
+            }
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saqlanmoqda...';
+        });
+    }
+});
+</script>
+{% endblock %}

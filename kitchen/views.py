@@ -10,8 +10,9 @@ import json
 
 from bot.models import Order, OrderItem, Category, Product
 from .models import KitchenStaff, OrderProgress
+from users.decorators import kitchen_required
 
-@login_required
+@kitchen_required
 def dashboard(request):
     """Oshxona dashboard"""
     try:
@@ -19,7 +20,23 @@ def dashboard(request):
         kitchen_staff = KitchenStaff.objects.get(user=request.user)
     except KitchenStaff.DoesNotExist:
         messages.error(request, "Siz oshxona xodimi emassiz!")
-        return redirect('admin:index')
+        return redirect(request.user.get_dashboard_url())
+    
+    # Mavjud ready buyurtmalar uchun Delivery obyektlarini yaratish
+    from courier.models import Delivery
+    ready_orders_without_delivery = Order.objects.filter(
+        orderprogress__status='ready',
+        delivery__isnull=True
+    )
+    
+    for order in ready_orders_without_delivery:
+        Delivery.objects.get_or_create(
+            order=order,
+            defaults={
+                'status': 'ready',
+                'delivery_address': f"{order.dormitory.name}, {order.room_number}-xona" if order.dormitory and order.room_number else order.address or "Manzil ko'rsatilmagan"
+            }
+        )
     
     # Statistika
     today = timezone.now().date()
@@ -59,7 +76,7 @@ def dashboard(request):
     
     return render(request, 'kitchen/dashboard.html', context)
 
-@login_required
+@kitchen_required
 def orders_list(request):
     """Barcha buyurtmalar ro'yxati"""
     try:
@@ -85,7 +102,7 @@ def orders_list(request):
     
     return render(request, 'kitchen/orders.html', context)
 
-@login_required
+@kitchen_required
 def order_detail(request, order_id):
     """Buyurtma tafsilotlari"""
     try:
@@ -113,7 +130,7 @@ def order_detail(request, order_id):
     
     return render(request, 'kitchen/order_detail.html', context)
 
-@login_required
+@kitchen_required
 def start_order(request, order_id):
     """Buyurtmani tayyorlashni boshlash"""
     if request.method == 'POST':
@@ -143,7 +160,33 @@ def start_order(request, order_id):
     
     return JsonResponse({'success': False, 'message': 'Method not allowed'})
 
-@login_required
+@kitchen_required
+def order_detail(request, order_id):
+    """Buyurtma tafsilotlari"""
+    try:
+        kitchen_staff = KitchenStaff.objects.get(user=request.user)
+    except KitchenStaff.DoesNotExist:
+        messages.error(request, "Siz oshxona xodimi emassiz!")
+        return redirect('admin:index')
+    
+    order = get_object_or_404(Order, id=order_id)
+    order_items = order.items.select_related('product').all()
+    
+    try:
+        progress = order.orderprogress
+    except OrderProgress.DoesNotExist:
+        progress = None
+    
+    context = {
+        'order': order,
+        'order_items': order_items,
+        'progress': progress,
+        'kitchen_staff': kitchen_staff,
+    }
+    
+    return render(request, 'kitchen/order_detail.html', context)
+
+@kitchen_required
 def complete_order(request, order_id):
     """Buyurtmani tayyor deb belgilash"""
     if request.method == 'POST':
@@ -160,6 +203,16 @@ def complete_order(request, order_id):
             order.status = 'ready'
             order.save()
             
+            # Kuryer uchun Delivery obyektini yaratish
+            from courier.models import Delivery
+            delivery, created = Delivery.objects.get_or_create(
+                order=order,
+                defaults={
+                    'status': 'ready',
+                    'delivery_address': f"{order.dormitory.name}, {order.room_number}-xona" if order.dormitory and order.room_number else order.address or "Manzil ko'rsatilmagan"
+                }
+            )
+            
             return JsonResponse({'success': True})
             
         except Exception as e:
@@ -167,7 +220,7 @@ def complete_order(request, order_id):
     
     return JsonResponse({'success': False, 'message': 'Method not allowed'})
 
-@login_required
+@kitchen_required
 def preparing_orders(request):
     """Tayyorlanayotgan buyurtmalar"""
     try:
@@ -187,7 +240,7 @@ def preparing_orders(request):
     
     return render(request, 'kitchen/preparing.html', context)
 
-@login_required
+@kitchen_required
 def ready_orders(request):
     """Tayyor buyurtmalar"""
     try:
@@ -198,7 +251,7 @@ def ready_orders(request):
     
     orders = Order.objects.filter(
         orderprogress__status='ready'
-    ).select_related('user', 'dormitory').prefetch_related('items__product', 'orderprogress', 'delivery_set').order_by('-created_at')
+    ).select_related('user', 'dormitory').prefetch_related('items__product', 'orderprogress', 'delivery').order_by('-created_at')
     
     context = {
         'orders': orders,
@@ -207,7 +260,7 @@ def ready_orders(request):
     
     return render(request, 'kitchen/ready.html', context)
 
-@login_required
+@kitchen_required
 def create_delivery(request, order_id):
     """Buyurtma uchun yetkazib berish yaratish"""
     if request.method == 'POST':

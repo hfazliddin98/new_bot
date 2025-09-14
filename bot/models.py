@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class TelegramUser(models.Model):
     """Telegram foydalanuvchilari modeli"""
@@ -83,7 +85,7 @@ class OrderSession(models.Model):
     """Buyurtma sessiyasi - har bir buyurtma uchun alohida manzil"""
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
     delivery_address = models.TextField(verbose_name="Yetkazib berish manzili")
-    room_number = models.CharField(max_length=20, verbose_name="Xona raqami")
+    room_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Xona raqami")
     phone_number = models.CharField(max_length=20, verbose_name="Telefon raqam")
     dormitory = models.ForeignKey('Dormitory', on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Yotoqxona")
     additional_notes = models.TextField(blank=True, verbose_name="Qo'shimcha izoh")
@@ -103,6 +105,7 @@ class Order(models.Model):
         ('confirmed', 'Tasdiqlandi'),
         ('preparing', 'Tayyorlanmoqda'),
         ('delivering', 'Yetkazilmoqda'),
+        ('delivered', 'Yetkazildi'),
         ('completed', 'Bajarildi'),
         ('cancelled', 'Bekor qilindi'),
     ]
@@ -115,11 +118,10 @@ class Order(models.Model):
     
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, verbose_name="Foydalanuvchi")
     dormitory = models.ForeignKey('Dormitory', on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Yotoqxona")
-    delivery_zone = models.ForeignKey('DeliveryZone', on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Yetkazib berish zonasi")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="Holat")
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='cash', verbose_name="To'lov usuli")
     delivery_address = models.TextField(verbose_name="Yetkazib berish manzili")
-    room_number = models.CharField(max_length=20, blank=True, verbose_name="Xona raqami")
+    room_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Xona raqami")
     phone_number = models.CharField(max_length=20, verbose_name="Telefon raqam")
     delivery_time = models.DateTimeField(blank=True, null=True, verbose_name="Yetkazib berish vaqti")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Umumiy summa")
@@ -138,10 +140,10 @@ class Order(models.Model):
     
     def get_expected_delivery_time(self):
         """Kutilayotgan yetkazib berish vaqtini hisoblash"""
-        if self.delivery_zone:
+        if self.dormitory:
             from django.utils import timezone
             from datetime import timedelta
-            return self.created_at + timedelta(minutes=self.delivery_zone.delivery_time)
+            return self.created_at + timedelta(minutes=self.dormitory.delivery_time)
         return None
     
     def get_delivery_time_display(self):
@@ -168,53 +170,17 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.product.name} x{self.quantity}"
 
-class DeliveryZone(models.Model):
-    """Yetkazib berish zonalari"""
-    name = models.CharField(max_length=100, verbose_name="Zona nomi")
-    description = models.TextField(blank=True, verbose_name="Tavsif")
+class Dormitory(models.Model):
+    """Yotoqxonalar"""
+    name = models.CharField(max_length=100, verbose_name="Yotoqxona nomi")
+    address = models.TextField(verbose_name="To'liq manzil")
+    contact_person = models.CharField(max_length=100, blank=True, verbose_name="Mas'ul shaxs")
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name="Telefon raqam")
     delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Yetkazib berish haqi")
     delivery_time = models.PositiveIntegerField(default=30, verbose_name="Yetkazib berish vaqti (daqiqa)")
     working_hours_start = models.TimeField(default='09:00', verbose_name="Ish boshlanish vaqti")
     working_hours_end = models.TimeField(default='23:00', verbose_name="Ish tugash vaqti")
     is_24_hours = models.BooleanField(default=False, verbose_name="24 soat ishlaydi")
-    is_active = models.BooleanField(default=True, verbose_name="Faol")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan vaqt")
-    
-    class Meta:
-        verbose_name = "Yetkazib berish zonasi"
-        verbose_name_plural = "Yetkazib berish zonalari"
-    
-    def __str__(self):
-        return f"{self.name} - {self.delivery_fee} so'm"
-    
-    def is_working_now(self):
-        """Hozir ishlayotganligini tekshirish"""
-        if self.is_24_hours:
-            return True
-        
-        from django.utils import timezone
-        current_time = timezone.now().time()
-        
-        if self.working_hours_start <= self.working_hours_end:
-            # Oddiy ish soatlari (masalan: 09:00 - 23:00)
-            return self.working_hours_start <= current_time <= self.working_hours_end
-        else:
-            # Tungi ish soatlari (masalan: 22:00 - 06:00)
-            return current_time >= self.working_hours_start or current_time <= self.working_hours_end
-    
-    def get_working_hours_display(self):
-        """Ish soatlarini ko'rsatish"""
-        if self.is_24_hours:
-            return "24 soat"
-        return f"{self.working_hours_start.strftime('%H:%M')} - {self.working_hours_end.strftime('%H:%M')}"
-
-class Dormitory(models.Model):
-    """Yotoqxonalar"""
-    name = models.CharField(max_length=100, verbose_name="Yotoqxona nomi")
-    address = models.TextField(verbose_name="To'liq manzil")
-    zone = models.ForeignKey(DeliveryZone, on_delete=models.CASCADE, verbose_name="Yetkazib berish zonasi")
-    contact_person = models.CharField(max_length=100, blank=True, verbose_name="Mas'ul shaxs")
-    contact_phone = models.CharField(max_length=20, blank=True, verbose_name="Telefon raqam")
     latitude = models.DecimalField(max_digits=10, decimal_places=8, blank=True, null=True, verbose_name="Kenglik")
     longitude = models.DecimalField(max_digits=11, decimal_places=8, blank=True, null=True, verbose_name="Uzunlik")
     is_active = models.BooleanField(default=True, verbose_name="Faol")
@@ -226,7 +192,26 @@ class Dormitory(models.Model):
         verbose_name_plural = "Yotoqxonalar"
     
     def __str__(self):
-        return f"{self.name} ({self.zone.name})"
+        return self.name
+    
+    def is_working_now(self):
+        """Hozir ishlayotganligini tekshirish"""
+        if self.is_24_hours:
+            return True
+        
+        from django.utils import timezone
+        current_time = timezone.now().time()
+        
+        if self.working_hours_start <= self.working_hours_end:
+            return self.working_hours_start <= current_time <= self.working_hours_end
+        else:
+            return current_time >= self.working_hours_start or current_time <= self.working_hours_end
+    
+    def get_working_hours_display(self):
+        """Ish soatlarini ko'rsatish"""
+        if self.is_24_hours:
+            return "24 soat"
+        return f"{self.working_hours_start.strftime('%H:%M')} - {self.working_hours_end.strftime('%H:%M')}"
 
 class Message(models.Model):
     """Xabarlar modeli"""

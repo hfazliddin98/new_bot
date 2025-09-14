@@ -1,76 +1,147 @@
-{% extends 'base.html' %}
+{% extends 'kitchen/base.html' %}
 
-{% block title %}Buyurtma #{{ order.id }}{% endblock %}
-
-{% block sidebar %}
-<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
-    <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'kitchen:dashboard' %}">
-                    <i class="fas fa-chart-line"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'kitchen:orders' %}">
-                    <i class="fas fa-list"></i> Buyurtmalar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'kitchen:preparing' %}">
-                    <i class="fas fa-clock"></i> Tayyorlanmoqda
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'kitchen:ready' %}">
-                    <i class="fas fa-check-circle"></i> Tayyor
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-{% endblock %}
+{% block title %}Buyurtma #{{ order.id }} - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-receipt"></i> Buyurtma #{{ order.id }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{% url 'kitchen:orders' %}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Orqaga
-            </a>
+{% csrf_token %}
+<div class="container">
+    <!-- Modern Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                            <i class="fas fa-receipt fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h1 class="h2 mb-1 fw-bold">Buyurtma #{{ order.id }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ order.created_at|date:"d.m.Y H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Modern Breadcrumb -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb bg-light rounded-pill px-3 py-2 shadow-sm mb-0">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'kitchen:dashboard' %}" class="text-decoration-none">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'kitchen:orders' %}" class="text-decoration-none">
+                                    <i class="fas fa-list me-1"></i>Buyurtmalar
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active fw-semibold">
+                                <i class="fas fa-receipt me-1"></i>#{{ order.id }}
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+                
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'kitchen:orders' %}" class="btn btn-outline-secondary rounded-pill">
+                        <i class="fas fa-arrow-left me-1"></i>Orqaga
+                    </a>
+                    <button class="btn btn-outline-primary rounded-pill" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i>Chop etish
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
 <div class="row">
     <!-- Buyurtma ma'lumotlari -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-info-circle"></i> Buyurtma ma'lumotlari</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong><i class="fas fa-user"></i> Mijoz:</strong><br>
-                        {{ order.user.get_display_name }}</p>
-                        
-                        <p><strong><i class="fas fa-phone"></i> Telefon:</strong><br>
-                        {{ order.phone_number }}</p>
-                        
-                        <p><strong><i class="fas fa-map-marker-alt"></i> Manzil:</strong><br>
-                        {{ order.dormitory.name }}</p>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <h5 class="card-title fw-bold d-flex align-items-center">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-2 me-2">
+                        <i class="fas fa-info-circle text-info"></i>
                     </div>
+                    Buyurtma ma'lumotlari
+                </h5>
+            </div>
+            <div class="card-body pt-2">
+                <div class="row g-4">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-door-open"></i> Xona:</strong><br>
-                        {{ order.room_number }}</p>
+                        <!-- Mijoz ma'lumotlari -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Mijoz</h6>
+                                <p class="mb-1 fw-semibold">{{ order.user.get_display_name }}</p>
+                            </div>
+                        </div>
                         
-                        <p><strong><i class="fas fa-clock"></i> Buyurtma vaqti:</strong><br>
-                        {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                        <!-- Telefon -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-phone text-success"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Telefon</h6>
+                                <p class="mb-1 fw-semibold">
+                                    <a href="tel:{{ order.phone_number }}" class="text-decoration-none">
+                                        {{ order.phone_number }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
                         
-                        <p><strong><i class="fas fa-money-bill"></i> Jami summa:</strong><br>
-                        {{ order.total_amount|floatformat:0 }} so'm</p>
+                        <!-- Manzil -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-map-marker-alt text-warning"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Manzil</h6>
+                                <p class="mb-1 fw-semibold">{{ order.dormitory.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <!-- Xona -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-info bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-door-open text-info"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Xona raqami</h6>
+                                <p class="mb-1 fw-semibold">{{ order.room_number }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Vaqt -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-secondary bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-clock text-secondary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Buyurtma vaqti</h6>
+                                <p class="mb-1 fw-semibold">{{ order.created_at|date:"d.m.Y H:i" }}</p>
+                                <small class="text-muted">{{ order.created_at|timesince }} oldin</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Jami summa -->
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3 flex-shrink-0">
+                                <i class="fas fa-money-bill text-success"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1 text-muted">Jami summa</h6>
+                                <p class="mb-1 fw-bold text-success fs-5">{{ order.total_amount|floatformat:0 }} so'm</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -183,54 +254,8 @@
 {% endblock %}
 
 {% block extra_js %}
-function startOrder(orderId) {
-    if (confirm('Buyurtmani tayyorlashni boshlaysizmi?')) {
-        fetch(`/kitchen/start-order/${orderId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Xatolik yuz berdi: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Xatolik yuz berdi');
-        });
-    }
-}
-
-function completeOrder(orderId) {
-    if (confirm('Buyurtma tayyor deb belgilaysizmi?')) {
-        fetch(`/kitchen/complete-order/${orderId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Xatolik yuz berdi: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Xatolik yuz berdi');
-        });
-    }
-}
-
+<script>
+// CSRF token olish funksiyasi
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -246,7 +271,59 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Order action handlers
+// Buyurtmani boshlash
+function startOrder(orderId) {
+    if (confirm('Buyurtmani tayyorlashni boshlaysizmi?')) {
+        fetch(`/kitchen/start-order/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Buyurtma tayyorlash boshlandi!');
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+// Buyurtmani yakunlash
+function completeOrder(orderId) {
+    if (confirm('Buyurtma tayyor deb belgilaysizmi?')) {
+        fetch(`/kitchen/complete-order/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Buyurtma tayyor!');
+                location.reload();
+            } else {
+                alert('Xatolik yuz berdi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Xatolik yuz berdi');
+        });
+    }
+}
+
+// Event listener'lar
 document.addEventListener('DOMContentLoaded', function() {
     const buttons = document.querySelectorAll('[data-action]');
     buttons.forEach(button => {
@@ -262,40 +339,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-function startOrder(orderId) {
-    fetch(`/kitchen/orders/${orderId}/start/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Xatolik yuz berdi');
-        }
-    });
-}
-
-function completeOrder(orderId) {
-    fetch(`/kitchen/orders/${orderId}/complete/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert('Xatolik yuz berdi');
-        }
-    });
-}
+</script>
 {% endblock %}

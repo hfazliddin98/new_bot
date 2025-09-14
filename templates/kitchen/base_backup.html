@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Oshxona Panel{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #00f2fe;
+            --warning-color: #38f9d7;
+            --danger-color: #fa709a;
+            
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            background: #ffffff !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #2d3748;
+            font-size: 0.9rem;
+            overflow-x: hidden;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 0.5rem;
+            font-size: 1.3rem;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 1200px) {
+            .container-fluid, .container {
+                max-width: 960px !important;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .container-fluid, .container {
+                max-width: 720px !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container-fluid, .container {
+                max-width: 540px !important;
+            }
+            
+            .card {
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .stats-number {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 0.75rem 0;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .container-fluid, .container {
+                max-width: 100% !important;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand text-white" href="{% url 'kitchen:dashboard' %}">
+                <i class="fas fa-utensils"></i> Oshxona Panel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:orders' %}">
+                            <i class="fas fa-list"></i> Buyurtmalar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:preparing' %}">
+                            <i class="fas fa-fire"></i> Tayyorlanmoqda
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:ready' %}">
+                            <i class="fas fa-check"></i> Tayyor
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                                <i class="fas fa-cog"></i> Admin Panel
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Chiqish
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // CSRF token olish
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+    </script>
+    
+    <!-- Message Container -->
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle"></i>
+            {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-triangle"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-circle"></i>
+            {% else %}
+                <i class="fas fa-info-circle"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `alert alert-${type} alert-dismissible fade show`;
+            alertContainer.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            let container = document.querySelector('.message-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'message-container';
+                document.body.insertBefore(container, document.body.firstChild);
+            }
+            
+            container.insertBefore(alertContainer, container.firstChild);
+            
+            // 5 soniyadan keyin avtomatik o'chirish
+            setTimeout(() => {
+                if (alertContainer.parentNode) {
+                    alertContainer.remove();
+                }
+            }, 5000);
+        }
+        
+        // CSRF token olish
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        }
+        
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            background: #ffffff !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #2d3748;
+            font-size: 0.9rem;
+            overflow-x: hidden;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: white !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 0.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 0.75rem;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0.6rem 0.8rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-primary {
+            background: var(--primary-gradient);
+        }
+        
+        .btn-success {
+            background: var(--success-gradient);
+        }
+        
+        .btn-warning {
+            background: var(--warning-gradient);
+            color: #2d3748;
+        }
+        
+        .btn-danger {
+            background: var(--danger-gradient);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary-gradient);
+        }
+        
+        .border-start-primary {
+            border-left: 4px solid var(--primary-color) !important;
+        }
+        
+        .border-start-success {
+            border-left: 4px solid var(--success-color) !important;
+        }
+        
+        .border-start-warning {
+            border-left: 4px solid var(--warning-color) !important;
+        }
+        
+        .border-start-danger {
+            border-left: 4px solid var(--danger-color) !important;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .navbar {
+            background: var(--primary-gradient);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            padding: 0.75rem 0;
+            min-height: 60px;
+        }
+        
+        .navbar .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem !important;
+            border-radius: 8px;
+            margin: 0 0.25rem;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar .nav-link i {
+            margin-right: 0.4rem;
+            font-size: 1rem;
+        }
+        
+        .navbar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .navbar .nav-link:hover::before {
+            transform: translateX(0);
+        }
+        
+        .navbar .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        .navbar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: white !important;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            margin-top: 0.5rem;
+            min-width: 200px;
+            padding: 0.5rem;
+        }
+        
+        .dropdown-item {
+            border-radius: 8px;
+            margin: 0.125rem 0;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item i {
+            margin-right: 0.5rem;
+            width: 16px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .main-content {
+            padding: 1rem 0;
+            min-height: calc(100vh - 76px);
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #ffffff !important;
+        }
+        
+        .navbar-toggler {
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
+        }
+        
+        .navbar-toggler-icon {
+            width: 1.2em;
+            height: 1.2em;
+        }
+        
+        .stats-card {
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+        }
+        
+        .stats-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .stats-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge {
+            border-radius: 4px;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .table {  
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: white;
+            font-size: 0.875rem;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 0.5rem;
+        }
+        
+        .table td {
+            border: none;
+            padding: 0.75rem 0.5rem;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr {
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { transform: translateY(20px); }
+            to { transform: translateY(0); }
+        }
+        
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(30px); }
+            to { transform: translateX(0); }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                color: #e2e8f0;
+            }
+            
+            .card {
+                background: rgba(45, 55, 72, 0.9);
+                color: #e2e8f0;
+            }
+            
+            .table th {
+                background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+                color: #e2e8f0;
+            }
+            
+            .dropdown-menu {
+                background: rgba(45, 55, 72, 0.95);
+                color: #e2e8f0;
+            }
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .card {
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .stats-number {
+                font-size: 1.6rem;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-gradient);
+        }
+        
+        /* Fixed container width for consistency */
+        .container-fluid {
+            max-width: 1140px !important;
+            margin: 0 auto;
+            background: #ffffff !important;
+        }
+        
+        .container {
+            max-width: 1140px !important;
+            background: #ffffff !important;
+        }
+        
+        /* Force white background for all main content areas */
+        main, .main-content, .content {
+            background: #ffffff !important;
+        }
+        
+        /* Remove all opacity effects */
+        .opacity-75,
+        .opacity-90,
+        .bg-opacity-10,
+        .bg-opacity-20,
+        .bg-white.bg-opacity-20,
+        .bg-success.bg-opacity-10,
+        .bg-primary.bg-opacity-10,
+        .bg-secondary.bg-opacity-10,
+        .bg-warning.bg-opacity-10,
+        .bg-info.bg-opacity-10,
+        .bg-danger.bg-opacity-10 {
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand text-white" href="{% url 'kitchen:dashboard' %}">
+                <i class="fas fa-utensils"></i> Oshxona Panel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:dashboard' %}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:orders' %}">
+                            <i class="fas fa-list"></i> Buyurtmalar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:live_orders' %}">
+                            <i class="fas fa-clock"></i> Jonli Monitor
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-box"></i> Mahsulotlar
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'kitchen:manage_products' %}">
+                                <i class="fas fa-list"></i> Mahsulotlar ro'yxati
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'kitchen:add_product' %}">
+                                <i class="fas fa-plus"></i> Yangi mahsulot
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'kitchen:manage_categories' %}">
+                                <i class="fas fa-tags"></i> Kategoriyalar
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'kitchen:add_category' %}">
+                                <i class="fas fa-plus"></i> Yangi kategoriya
+                            </a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:preparing' %}">
+                            <i class="fas fa-fire"></i> Tayyorlanmoqda
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'kitchen:ready' %}">
+                            <i class="fas fa-check"></i> Tayyor
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                                <i class="fas fa-cog"></i> Admin Panel
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Chiqish
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {% if message.tags == 'error' %}
+                <i class="fas fa-exclamation-circle"></i>
+            {% elif message.tags == 'success' %}
+                <i class="fas fa-check-circle"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle"></i>
+            {% else %}
+                <i class="fas fa-info-circle"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = `alert alert-${type} alert-dismissible fade show`;
+            alertContainer.role = 'alert';
+            alertContainer.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(alertContainer, container.firstChild);
+                
+                // 5 soniyadan keyin avtomatik o'chirish
+                setTimeout(() => {
+                    if (alertContainer.parentNode) {
+                        alertContainer.remove();
+                    }
+                }, 5000);
+            }
+        }
+        
+        // CSRF token olish
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+    </script>
+    
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

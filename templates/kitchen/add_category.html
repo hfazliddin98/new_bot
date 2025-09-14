@@ -4,35 +4,127 @@
 
 {% block content %}
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-6 mx-auto">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-plus"></i> Yangi kategoriya qo'shish
-                    </h5>
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-plus-circle text-success"></i> 
+                Yangi Kategoriya Qo'shish
+            </h1>
+            <p class="text-muted mb-0">Yangi mahsulot kategoriyasini tizimga qo'shing</p>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'kitchen:dashboard' %}">Dashboard</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'kitchen:manage_categories' %}">Kategoriyalar</a>
+                </li>
+                <li class="breadcrumb-item active">Yangi qo'shish</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle p-2 me-3">
+                            <i class="fas fa-tags text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Kategoriya Ma'lumotlari</h5>
+                            <small class="text-muted">Barcha majburiy maydonlarni to'ldiring</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post">
+                
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
                         
-                        <div class="form-group">
-                            <label for="name">Kategoriya nomi <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" required placeholder="Masalan: 🍕 Pitsa">
+                        <!-- Kategoriya Nomi -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="name" class="form-label fw-semibold">
+                                    <i class="fas fa-tag text-primary me-2"></i>
+                                    Kategoriya Nomi 
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control form-control-lg" 
+                                    id="name" 
+                                    name="name" 
+                                    required 
+                                    placeholder="Masalan: 🍕 Pitsa, 🥤 Ichimliklar, 🍰 Shirinliklar"
+                                    maxlength="100"
+                                >
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                    Emoji va tushunarli nom ishlatishni tavsiya etamiz
+                                </div>
+                                <div class="invalid-feedback">
+                                    Kategoriya nomini kiriting
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="description">Tavsif</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Kategoriya haqida qisqacha ma'lumot"></textarea>
+                        <!-- Tavsif -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="description" class="form-label fw-semibold">
+                                    <i class="fas fa-align-left text-secondary me-2"></i>
+                                    Tavsif
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="description" 
+                                    name="description" 
+                                    rows="4" 
+                                    placeholder="Kategoriya haqida batafsil ma'lumot yozing..."
+                                    maxlength="500"
+                                ></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                    Bu maydon ixtiyoriy, lekin to'ldirish tavsiya etiladi
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alert Info -->
+                        <div class="alert alert-light border-start border-4 border-info" role="alert">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-lightbulb text-info"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="alert-heading">Maslahat</h6>
+                                    <ul class="mb-0 small">
+                                        <li>Kategoriya nomiga emoji qo'shish foydalanuvchilar uchun qulayroq</li>
+                                        <li>Qisqa va tushunarli nomlar tanlang</li>
+                                        <li>Tavsifda kategoriyaga kiruvchi mahsulotlar turini yozing</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="form-group d-flex justify-content-between">
-                            <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Orqaga
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Saqlash
-                            </button>
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-between align-items-center">
+                                    <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-outline-secondary btn-lg order-2 order-sm-1">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Bekor qilish
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-5 order-1 order-sm-2">
+                                        <i class="fas fa-save me-2"></i>
+                                        Kategoriyani Saqlash
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -40,4 +132,57 @@
         </div>
     </div>
 </div>
+
+<!-- Form Validation Script -->
+<script>
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Character counter for name field
+document.getElementById('name').addEventListener('input', function() {
+    const maxLength = this.getAttribute('maxlength');
+    const currentLength = this.value.length;
+    const counter = document.getElementById('nameCounter');
+    
+    if (!counter) {
+        const counterEl = document.createElement('div');
+        counterEl.id = 'nameCounter';
+        counterEl.className = 'form-text text-end';
+        this.parentNode.appendChild(counterEl);
+    }
+    
+    document.getElementById('nameCounter').innerHTML = 
+        `<small class="text-muted">${currentLength}/${maxLength} belgi</small>`;
+});
+
+// Character counter for description field
+document.getElementById('description').addEventListener('input', function() {
+    const maxLength = this.getAttribute('maxlength');
+    const currentLength = this.value.length;
+    const counter = document.getElementById('descCounter');
+    
+    if (!counter) {
+        const counterEl = document.createElement('div');
+        counterEl.id = 'descCounter';
+        counterEl.className = 'form-text text-end';
+        this.parentNode.appendChild(counterEl);
+    }
+    
+    document.getElementById('descCounter').innerHTML = 
+        `<small class="text-muted">${currentLength}/${maxLength} belgi</small>`;
+});
+</script>
 {% endblock %}

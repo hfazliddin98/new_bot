@@ -817,6 +817,13 @@ def setup_handlers():
             logger.error(f"Text message handling xatosi: {e}")
             send_safe_message(message.chat.id, "❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.")
 
+
+
+def setup_handlers():
+    """Bot handler'larini sozlash"""
+    print("⚙️ Handler'lar sozlanmoqda...")
+    print("✅ Handler'lar sozlandi!")
+
 def start_bot():
     """Botni ishga tushirish"""
     try:

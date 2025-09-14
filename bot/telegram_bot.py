@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """
 Django App ichida ishlaydigan Telegram bot
 """
@@ -10,7 +10,7 @@ import logging
 import requests
 from pathlib import Path
 
-# Django sozlamalarini yuklash (agar kerak bo'lsa)
+# Django sozlamalarini yuklash
 try:
     from django.conf import settings
     if not settings.configured:
@@ -18,12 +18,12 @@ try:
         sys.path.append(str(BASE_DIR))
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'asosiy.settings')
         django.setup()
-except:
-    pass
+except Exception as e:
+    print(f"Django sozlash xatosi: {e}")
 
 import telebot
 from telebot import types
-from .models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory
+from .models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, Dormitory, OrderSession
 from decimal import Decimal
 
 # Logging sozlash
@@ -34,51 +34,7 @@ try:
     from django.conf import settings
     BOT_TOKEN = settings.TELEGRAM_BOT_TOKEN
 except:
-    BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', "7908094134:AAHhj28h-QmV8hqEqOZAUnU9ebXBEwwKuA0")
-
-def create_bot_instance():
-    """Xatoliksiz bot instance yaratish"""
-    try:
-        print("🔧 Bot instance yaratilmoqda...")
-        
-        # Oldingi webhook va updatelarni tozalash
-        base_url = f"https://api.telegram.org/bot{BOT_TOKEN}"
-        
-        print("📡 Webhook'ni o'chirish...")
-        try:
-            requests.get(f"{base_url}/deleteWebhook", timeout=30)
-            time.sleep(2)
-        except Exception as e:
-            print(f"⚠️ Webhook o'chirishda xatolik: {e}")
-        
-        print("🔄 Pending updatelarni tozalash...")
-        try:
-            for i in range(3):
-                requests.get(f"{base_url}/getUpdates?offset=-1&timeout=1", timeout=10)
-                time.sleep(1)
-        except Exception as e:
-            print(f"⚠️ Update tozalashda xatolik: {e}")
-        
-        time.sleep(3)
-        
-        # Bot yaratish
-        print("🤖 Bot yaratilmoqda...")
-        bot = telebot.TeleBot(BOT_TOKEN, threaded=True)
-        
-        # Bot ma'lumotlarini tekshirish
-        try:
-            bot_info = bot.get_me()
-            print(f"✅ Bot tayyor: @{bot_info.username}")
-            logger.info(f"✅ Bot instance yaratildi: @{bot_info.username}")
-            return bot
-        except Exception as e:
-            print(f"❌ Bot ma'lumotlarini olishda xatolik: {e}")
-            return None
-        
-    except Exception as e:
-        logger.error(f"Bot yaratishda xatolik: {e}")
-        print(f"❌ Bot yaratishda xatolik: {e}")
-        return None
+    BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7908094134:AAHhj28h-QmV8hqEqOZAUnU9ebXBEwwKuA0')
 
 # Global bot instance
 bot_instance = None
@@ -87,7 +43,15 @@ def get_bot():
     """Bot instance'ni olish yoki yaratish"""
     global bot_instance
     if bot_instance is None:
-        bot_instance = create_bot_instance()
+        try:
+            print('🤖 Bot instance yaratilmoqda...')
+            bot_instance = telebot.TeleBot(BOT_TOKEN, threaded=True)
+            bot_info = bot_instance.get_me()
+            print(f'✅ Bot tayyor: @{bot_info.username}')
+            return bot_instance
+        except Exception as e:
+            print(f'❌ Bot yaratishda xatolik: {e}')
+            return None
     return bot_instance
 
 def send_safe_message(chat_id, text, reply_markup=None, parse_mode=None):
@@ -98,16 +62,6 @@ def send_safe_message(chat_id, text, reply_markup=None, parse_mode=None):
             return bot.send_message(chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
     except Exception as e:
         logger.error(f"Xabar yuborishda xatolik: {e}")
-        return None
-
-def edit_safe_message(chat_id, message_id, text, reply_markup=None):
-    """Xatoliksiz xabar tahrirlash"""
-    try:
-        bot = get_bot()
-        if bot:
-            return bot.edit_message_text(text, chat_id, message_id, reply_markup=reply_markup)
-    except Exception as e:
-        logger.error(f"Xabar tahrirlashda xatolik: {e}")
         return None
 
 def get_main_menu_keyboard():
@@ -123,20 +77,6 @@ def get_main_menu_keyboard():
     )
     return markup
 
-def start_registration(chat_id, user):
-    """Ro'yxatdan o'tkazishni boshlash"""
-    welcome_text = f"🎉 Assalomu alaykum {user.first_name or 'Foydalanuvchi'}!\n\n"
-    welcome_text += "🍕 Bizning yetkazib berish xizmatiga xush kelibsiz!\n\n"
-    welcome_text += "📝 Ro'yxatdan o'tish uchun ma'lumotlaringizni kiriting:\n\n"
-    welcome_text += "📱 Avval telefon raqamingizni yuboring:"
-    
-    # Telefon raqamini so'rash uchun klaviatura
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    contact_btn = types.KeyboardButton("📱 Telefon raqamni yuborish", request_contact=True)
-    markup.add(contact_btn)
-    
-    send_safe_message(chat_id, welcome_text, markup)
-
 def show_main_menu(chat_id, user):
     """Asosiy menyuni ko'rsatish"""
     text = f"👋 Salom {user.get_display_name()}!\n\n"
@@ -144,74 +84,35 @@ def show_main_menu(chat_id, user):
     
     send_safe_message(chat_id, text, get_main_menu_keyboard())
 
-def ask_full_name(chat_id, user):
-    """To'liq ismni so'rash"""
-    text = "✅ Telefon raqam qabul qilindi!\n\n"
-    text += "👤 Endi to'liq ismingizni kiriting (Familiya Ism):"
-    
-    markup = types.ReplyKeyboardRemove()
-    send_safe_message(chat_id, text, markup)
-
-def ask_dormitory(chat_id, user):
-    """Yotoqxonani tanlashni so'rash"""
-    text = "✅ Ism qabul qilindi!\n\n"
-    text += "🏠 Yotoqxonangizni tanlang:"
-    
-    # Yotoqxonalarni ko'rsatish
-    dormitories = Dormitory.objects.filter(is_active=True)
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    
-    for dorm in dormitories:
-        markup.add(types.InlineKeyboardButton(
-            f"🏠 {dorm.name}",
-            callback_data=f"dorm_{dorm.id}"
-        ))
-    
-    send_safe_message(chat_id, text, markup)
-
-def ask_room_number(chat_id, user):
-    """Xona raqamini so'rash"""
-    text = "✅ Yotoqxona tanlandi!\n\n"
-    text += "🚪 Xona raqamingizni kiriting:"
-    
-    send_safe_message(chat_id, text)
-
-def complete_registration(chat_id, user):
-    """Ro'yxatdan o'tishni tugatish"""
-    text = "🎉 Tabriklaymiz! Ro'yxatdan o'tish muvaffaqiyatli tugallandi!\n\n"
-    text += f"👤 Ism: {user.full_name}\n"
-    text += f"📱 Telefon: {user.phone_number}\n"
-    text += f"🏠 Yotoqxona: {user.dormitory.name if user.dormitory else 'Tanlanmagan'}\n"
-    text += f"🚪 Xona: {user.room_number}\n\n"
-    text += "🍕 Endi buyurtma berishingiz mumkin!"
-    
-    send_safe_message(chat_id, text, get_main_menu_keyboard())
-
 def show_menu_categories(chat_id, user):
     """Kategoriyalarni ko'rsatish"""
-    categories = Category.objects.filter(is_active=True)
-    
-    if not categories.exists():
-        send_safe_message(chat_id, "❌ Hozircha kategoriyalar mavjud emas.", get_main_menu_keyboard())
-        return
-    
-    text = "🍕 Kategoriyalarni tanlang:"
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    
-    for category in categories:
-        # Kategoriyada nechta mahsulot borligini hisoblash
-        product_count = Product.objects.filter(category=category, is_available=True).count()
+    try:
+        categories = Category.objects.filter(is_active=True)
         
-        if product_count > 0:
-            markup.add(types.InlineKeyboardButton(
-                f"{category.name} ({product_count})",
-                callback_data=f"cat_{category.id}"
-            ))
-    
-    # Orqaga qaytish tugmasi
-    markup.add(types.InlineKeyboardButton("🔙 Orqaga", callback_data="back_to_main"))
-    
-    send_safe_message(chat_id, text, markup)
+        if not categories.exists():
+            send_safe_message(chat_id, "❌ Hozircha kategoriyalar mavjud emas.", get_main_menu_keyboard())
+            return
+        
+        text = "🍕 Kategoriyalarni tanlang:"
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        
+        for category in categories:
+            # Kategoriyada nechta mahsulot borligini hisoblash
+            product_count = Product.objects.filter(category=category, is_available=True).count()
+            
+            if product_count > 0:
+                markup.add(types.InlineKeyboardButton(
+                    f"{category.name} ({product_count})",
+                    callback_data=f"cat_{category.id}"
+                ))
+        
+        # Orqaga qaytish tugmasi
+        markup.add(types.InlineKeyboardButton("🔙 Orqaga", callback_data="back_to_main"))
+        
+        send_safe_message(chat_id, text, markup)
+    except Exception as e:
+        logger.error(f"Kategoriyalar ko'rsatishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
 
 def show_category_products(chat_id, user, category_id):
     """Kategoriya mahsulotlarini ko'rsatish"""
@@ -230,10 +131,6 @@ def show_category_products(chat_id, user, category_id):
         markup = types.InlineKeyboardMarkup(row_width=1)
         
         for product in products:
-            product_text = f"{product.name}\n💰 {product.price:,} so'm"
-            if product.description:
-                product_text += f"\n📝 {product.description[:50]}..."
-            
             markup.add(types.InlineKeyboardButton(
                 f"🛒 {product.name} - {product.price:,} so'm",
                 callback_data=f"prod_{product.id}"
@@ -249,6 +146,9 @@ def show_category_products(chat_id, user, category_id):
         
     except Category.DoesNotExist:
         send_safe_message(chat_id, "❌ Kategoriya topilmadi.", get_main_menu_keyboard())
+    except Exception as e:
+        logger.error(f"Mahsulotlar ko'rsatishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
 
 def show_product_details(chat_id, user, product_id):
     """Mahsulot tafsilotlarini ko'rsatish"""
@@ -278,6 +178,9 @@ def show_product_details(chat_id, user, product_id):
         
     except Product.DoesNotExist:
         send_safe_message(chat_id, "❌ Mahsulot topilmadi.", get_main_menu_keyboard())
+    except Exception as e:
+        logger.error(f"Mahsulot tafsilotlarida xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
 
 def add_to_cart(chat_id, user, product_id):
     """Mahsulotni savatga qo'shish"""
@@ -318,103 +221,281 @@ def add_to_cart(chat_id, user, product_id):
         
     except Product.DoesNotExist:
         send_safe_message(chat_id, "❌ Mahsulot topilmadi.", get_main_menu_keyboard())
+    except Exception as e:
+        logger.error(f"Savatga qo'shishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
 
 def show_cart(chat_id, user):
     """Savatni ko'rsatish"""
-    cart_items = Cart.objects.filter(user=user)
-    
-    if not cart_items.exists():
-        text = "🛒 Savatingiz bo'sh\n\n"
-        text += "🍕 Mahsulotlarni ko'rish uchun 'Menyu' tugmasini bosing."
-        send_safe_message(chat_id, text, get_main_menu_keyboard())
-        return
-    
-    text = "🛒 Sizning savatingiz:\n\n"
-    total_price = Decimal('0')
-    
-    for item in cart_items:
-        item_total = item.get_total_price()
-        total_price += item_total
-        text += f"🍕 {item.product.name}\n"
-        text += f"💰 {item.product.price:,} so'm x {item.quantity} = {item_total:,} so'm\n\n"
-    
-    text += f"💳 Jami: {total_price:,} so'm"
-    
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    
-    # Har bir mahsulot uchun boshqaruv tugmalari
-    for item in cart_items:
-        markup.add(
-            types.InlineKeyboardButton(f"➖ {item.product.name}", callback_data=f"decrease_{item.product.id}"),
-            types.InlineKeyboardButton(f"➕ {item.product.name}", callback_data=f"increase_{item.product.id}")
-        )
-    
-    # Asosiy tugmalar
-    markup.add(
-        types.InlineKeyboardButton("🗑️ Savatni tozalash", callback_data="clear_cart"),
-        types.InlineKeyboardButton("✅ Buyurtma berish", callback_data="place_order")
-    )
-    markup.add(types.InlineKeyboardButton("🔙 Bosh menyu", callback_data="back_to_main"))
-    
-    send_safe_message(chat_id, text, markup)
-
-def show_user_orders(chat_id, user):
-    """Foydalanuvchi buyurtmalarini ko'rsatish"""
-    orders = Order.objects.filter(user=user).order_by('-created_at')[:10]  # So'nggi 10 ta
-    
-    if not orders.exists():
-        text = "📋 Sizda hali buyurtmalar yo'q\n\n"
-        text += "🍕 Birinchi buyurtmangizni berish uchun 'Menyu' tugmasini bosing!"
-        send_safe_message(chat_id, text, get_main_menu_keyboard())
-        return
-    
-    text = "📋 Sizning buyurtmalaringiz:\n\n"
-    
-    for order in orders:
-        status_emoji = {
-            'pending': '⏳',
-            'confirmed': '✅',
-            'preparing': '👨‍🍳',
-            'delivering': '🚗',
-            'completed': '✅',
-            'cancelled': '❌'
-        }.get(order.status, '❓')
+    try:
+        cart_items = Cart.objects.filter(user=user)
         
-        text += f"{status_emoji} Buyurtma #{order.id}\n"
-        text += f"📅 {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
-        text += f"💰 {order.total_amount:,} so'm\n"
-        text += f"📍 {order.get_status_display()}\n\n"
-    
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔙 Bosh menyu", callback_data="back_to_main"))
-    
-    send_safe_message(chat_id, text, markup)
+        if not cart_items.exists():
+            text = "🛒 Savatingiz bo'sh\n\n"
+            text += "🍕 Mahsulotlarni ko'rish uchun 'Menyu' tugmasini bosing."
+            send_safe_message(chat_id, text, get_main_menu_keyboard())
+            return
+        
+        text = "🛒 Sizning savatingiz:\n\n"
+        total_price = Decimal('0')
+        
+        for item in cart_items:
+            item_total = item.get_total_price()
+            total_price += item_total
+            text += f"🍕 {item.product.name}\n"
+            text += f"💰 {item.product.price:,} so'm x {item.quantity} = {item_total:,} so'm\n\n"
+        
+        text += f"💳 Jami: {total_price:,} so'm"
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        
+        # Har bir mahsulot uchun boshqaruv tugmalari
+        for item in cart_items:
+            markup.add(
+                types.InlineKeyboardButton(f"➖ {item.product.name[:15]}...", callback_data=f"decrease_{item.product.id}"),
+                types.InlineKeyboardButton(f"➕ {item.product.name[:15]}...", callback_data=f"increase_{item.product.id}")
+            )
+        
+        # Asosiy tugmalar
+        markup.add(
+            types.InlineKeyboardButton("🗑️ Savatni tozalash", callback_data="clear_cart"),
+            types.InlineKeyboardButton("✅ Buyurtma berish", callback_data="place_order")
+        )
+        markup.add(types.InlineKeyboardButton("🔙 Bosh menyu", callback_data="back_to_main"))
+        
+        send_safe_message(chat_id, text, markup)
+        
+    except Exception as e:
+        logger.error(f"Savatni ko'rsatishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
 
 def place_order(chat_id, user):
-    """Buyurtma berish"""
+    """Buyurtma berish - yotoqxona tanlash"""
     cart_items = Cart.objects.filter(user=user)
     
     if not cart_items.exists():
         send_safe_message(chat_id, "❌ Savatingiz bo'sh! Avval mahsulot qo'shing.", get_main_menu_keyboard())
         return
     
+    # To'g'ridan-to'g'ri yotoqxonalarni ko'rsatish
+    show_dormitories(chat_id, user)
+
+def show_my_orders(chat_id, user):
+    """Foydalanuvchining buyurtmalarini ko'rsatish"""
     try:
-        # Buyurtma yaratish
+        orders = Order.objects.filter(user=user).order_by('-created_at')[:10]  # So'nggi 10 ta buyurtma
+        
+        if not orders.exists():
+            text = "📋 Sizda hali buyurtmalar yo'q\n\n"
+            text += "🍕 Birinchi buyurtmangizni berish uchun 'Menyu' tugmasini bosing!"
+            send_safe_message(chat_id, text, get_main_menu_keyboard())
+            return
+        
+        text = "📋 **Sizning buyurtmalaringiz:**\n\n"
+        
+        for order in orders:
+            # Status emoji
+            status_emoji = {
+                'pending': '⏳',
+                'confirmed': '✅', 
+                'preparing': '👨‍🍳',
+                'delivering': '🚚',
+                'delivered': '📦',
+                'completed': '🎉',
+                'cancelled': '❌'
+            }.get(order.status, '📦')
+            
+            text += f"{status_emoji} **Buyurtma #{order.id}**\n"
+            text += f"📅 {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+            text += f"📍 {order.delivery_address}\n"
+            text += f"💰 {order.total_amount:,} so'm\n"
+            text += f"📊 Holat: **{order.get_status_display()}**\n"
+            
+            # Yetkazish vaqti
+            if order.dormitory and order.status in ['confirmed', 'preparing', 'delivering']:
+                expected_time = order.get_expected_delivery_time()
+                if expected_time:
+                    text += f"⏰ Kutilayotgan vaqt: {expected_time.strftime('%H:%M')}\n"
+            elif order.status == 'delivered':
+                text += f"✅ Yetkazildi: {order.updated_at.strftime('%H:%M')}\n"
+            
+            text += "\n"
+        
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("🔙 Bosh menyu", callback_data="back_to_main"))
+        
+        send_safe_message(chat_id, text, markup, parse_mode='Markdown')
+        
+    except Exception as e:
+        logger.error(f"Buyurtmalarni ko'rsatishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
+
+def show_dormitories(chat_id, user):
+    """Barcha yotoqxonalarni to'liq ma'lumot bilan ko'rsatish"""
+    try:
+        dormitories = Dormitory.objects.filter(is_active=True)
+        
+        if not dormitories.exists():
+            send_safe_message(chat_id, "❌ Hozircha yotoqxonalar mavjud emas.", get_main_menu_keyboard())
+            return
+        
+        text = "🏠 Yotoqxonangizni tanlang:\n\n"
+        
+        # Har bir yotoqxona haqida to'liq ma'lumot
+        for dormitory in dormitories:
+            text += f"🏢 **{dormitory.name}**\n"
+            text += f"📍 {dormitory.address}\n"
+            
+            # Yetkazish haqi
+            if dormitory.delivery_fee > 0:
+                text += f"💰 Yetkazish haqi: {dormitory.delivery_fee:,} so'm\n"
+            else:
+                text += "💰 Yetkazish: **BEPUL** 🎉\n"
+            
+            # Yetkazish vaqti
+            if dormitory.delivery_time:
+                text += f"⏰ Yetkazish vaqti: ~{dormitory.delivery_time} daqiqa\n"
+            
+            # Ish vaqti
+            if dormitory.is_24_hours:
+                text += "🕐 Ish vaqti: **24/7** 🌙\n"
+            else:
+                text += f"🕐 Ish vaqti: {dormitory.get_working_hours_display()}\n"
+            
+            # Mas'ul shaxs ma'lumotlari
+            if dormitory.contact_person:
+                text += f"👤 Mas'ul: {dormitory.contact_person}\n"
+            if dormitory.contact_phone:
+                text += f"📞 Telefon: {dormitory.contact_phone}\n"
+            
+            # Hozir ishlaydimi
+            if dormitory.is_working_now():
+                text += "✅ **HOZIR FAOL**\n"
+            else:
+                text += "❌ **HOZIR YOPIQ**\n"
+            
+            text += "➖➖➖➖➖➖➖➖➖➖\n\n"
+        
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        
+        for dormitory in dormitories:
+            # Tugma matnini qisqartirish
+            status_icon = "✅" if dormitory.is_working_now() else "❌"
+            button_text = f"{status_icon} {dormitory.name}"
+            
+            if dormitory.delivery_fee > 0:
+                button_text += f" ({dormitory.delivery_fee:,} so'm)"
+            else:
+                button_text += " (BEPUL)"
+            
+            markup.add(types.InlineKeyboardButton(
+                button_text,
+                callback_data=f"select_dorm_{dormitory.id}"
+            ))
+        
+        markup.add(types.InlineKeyboardButton("🔙 Savatga qaytish", callback_data="view_cart"))
+        
+        send_safe_message(chat_id, text, markup, parse_mode='Markdown')
+        
+    except Exception as e:
+        logger.error(f"Yotoqxonalar ko'rsatishda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
+
+
+
+def ask_room_number(chat_id, user, dormitory_id):
+    """Xona raqamini so'rash - yotoqxona ma'lumotlari bilan"""
+    try:
+        dormitory = Dormitory.objects.get(id=dormitory_id, is_active=True)
+        
+        # Yotoqxona hozir ishlaydimi tekshirish
+        if not dormitory.is_working_now():
+            text = f"❌ **{dormitory.name}** hozir yopiq!\n\n"
+            text += f"🕐 Ish vaqti: {dormitory.get_working_hours_display()}\n\n"
+            text += "Iltimos, boshqa yotoqxonani tanlang yoki ish vaqtida qaytib keling."
+            
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("🔙 Yotoqxonalar", callback_data="place_order"))
+            markup.add(types.InlineKeyboardButton("🏠 Bosh menyu", callback_data="back_to_main"))
+            
+            send_safe_message(chat_id, text, markup, parse_mode='Markdown')
+            return
+        
+        # OrderSession yaratish
+        OrderSession.objects.filter(user=user, is_completed=False).delete()
+        
+        session = OrderSession.objects.create(
+            user=user,
+            dormitory=dormitory,
+            delivery_address=dormitory.name,
+            phone_number=user.phone_number or ""
+        )
+        
+        text = f"✅ **{dormitory.name}** tanlandi!\n\n"
+        text += f"📍 Manzil: {dormitory.address}\n"
+        
+        # Yetkazish ma'lumotlari
+        if dormitory.delivery_fee > 0:
+            text += f"💰 Yetkazish haqi: {dormitory.delivery_fee:,} so'm\n"
+        else:
+            text += "💰 Yetkazish: **BEPUL** 🎉\n"
+        
+        if dormitory.delivery_time:
+            text += f"⏰ Taxminiy yetkazish vaqti: ~{dormitory.delivery_time} daqiqa\n"
+        
+        # Mas'ul shaxs
+        if dormitory.contact_person and dormitory.contact_phone:
+            text += f"👤 Mas'ul: {dormitory.contact_person} ({dormitory.contact_phone})\n"
+        
+        text += "\n📝 **Iltimos, xona raqamingizni kiriting:**\n\n"
+        text += "Masalan: `101`, `205A`, `315-B`, `12`"
+        
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            types.InlineKeyboardButton("🔙 Yotoqxonalar", callback_data="place_order"),
+            types.InlineKeyboardButton("❌ Bekor qilish", callback_data="cancel_order")
+        )
+        
+        send_safe_message(chat_id, text, markup, parse_mode='Markdown')
+        
+    except Dormitory.DoesNotExist:
+        send_safe_message(chat_id, "❌ Yotoqxona topilmadi.", get_main_menu_keyboard())
+    except Exception as e:
+        logger.error(f"Xona raqami so'rashda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Xatolik yuz berdi.", get_main_menu_keyboard())
+
+def confirm_order(chat_id, user, room_number):
+    """Buyurtmani tasdiqlash"""
+    try:
+        # OrderSession olish
+        session = OrderSession.objects.filter(user=user, is_completed=False).first()
+        if not session:
+            send_safe_message(chat_id, "❌ Sessiya topilmadi. Qaytadan urinib ko'ring.", get_main_menu_keyboard())
+            return
+        
+        # Savatni tekshirish
+        cart_items = Cart.objects.filter(user=user)
+        if not cart_items.exists():
+            send_safe_message(chat_id, "❌ Savatingiz bo'sh!", get_main_menu_keyboard())
+            return
+        
+        # Umumiy summani hisoblash
         total_amount = Decimal('0')
         for item in cart_items:
             total_amount += item.get_total_price()
         
-        # Yetkazib berish manzili
-        delivery_address = f"{user.dormitory.name}, {user.room_number}-xona" if user.dormitory else "Aniqlanmagan"
+        # Yetkazish haqini qo'shish
+        delivery_fee = session.dormitory.delivery_fee or Decimal('0')
+        final_total = total_amount + delivery_fee
         
         # Buyurtma yaratish
         order = Order.objects.create(
             user=user,
-            dormitory=user.dormitory,
-            delivery_address=delivery_address,
-            room_number=user.room_number,
-            phone_number=user.phone_number,
-            total_amount=total_amount,
+            dormitory=session.dormitory,
+            delivery_address=f"{session.dormitory.name}, {room_number}-xona",
+            room_number=room_number,
+            phone_number=user.phone_number or "",
+            total_amount=final_total,
             status='pending'
         )
         
@@ -430,13 +511,24 @@ def place_order(chat_id, user):
         # Savatni tozalash
         cart_items.delete()
         
-        # Buyurtma tasdiqlanganini yuborish
+        # Sessiyani tugallash
+        session.is_completed = True
+        session.save()
+        
+        # Tasdiqlash xabari
         text = f"✅ Buyurtma #{order.id} muvaffaqiyatli qabul qilindi!\n\n"
         text += f"📅 Vaqt: {order.created_at.strftime('%d.%m.%Y %H:%M')}\n"
-        text += f"💰 Summa: {total_amount:,} so'm\n"
-        text += f"📍 Manzil: {delivery_address}\n"
-        text += f"📱 Telefon: {user.phone_number}\n\n"
-        text += "⏳ Buyurtmangiz ko'rib chiqilmoqda...\n"
+        text += f"🍕 Mahsulotlar: {total_amount:,} so'm\n"
+        
+        if delivery_fee > 0:
+            text += f"� Yetkazish: {delivery_fee:,} so'm\n"
+            text += f"💰 Jami: {final_total:,} so'm\n"
+        else:
+            text += f"🚚 Yetkazish: Bepul\n"
+            text += f"�💰 Jami: {final_total:,} so'm\n"
+        
+        text += f"📍 Manzil: {order.delivery_address}\n\n"
+        text += "⏳ Buyurtmangiz oshpazga yuborildi!\n"
         text += "📞 Tez orada siz bilan bog'lanamiz!"
         
         markup = types.InlineKeyboardMarkup()
@@ -445,14 +537,47 @@ def place_order(chat_id, user):
         
         send_safe_message(chat_id, text, markup)
         
-        # Admin/kitchen'ga xabar yuborish (keyinchalik qo'shiladi)
-        logger.info(f"Yangi buyurtma: #{order.id} - {user.full_name} - {total_amount} so'm")
+        # Oshpazga xabar yuborish (keyinroq qo'shiladi)
+        send_order_to_kitchen(order)
+        
+        logger.info(f"Yangi buyurtma: #{order.id} - {user.first_name} - {final_total:,} so'm")
         
     except Exception as e:
-        logger.error(f"Buyurtma berishda xatolik: {e}")
-        send_safe_message(chat_id, "❌ Buyurtma berishda xatolik yuz berdi. Qaytadan urinib ko'ring.", get_main_menu_keyboard())
+        logger.error(f"Buyurtma tasdiqlashda xatolik: {e}")
+        send_safe_message(chat_id, "❌ Buyurtma berishda xatolik yuz berdi.", get_main_menu_keyboard())
 
-# Bot handler'lari
+def send_order_to_kitchen(order):
+    """Buyurtmani oshpazga yuborish"""
+    try:
+        # Kitchen staff'larga xabar yuborish
+        from users.models import KitchenStaff
+        kitchen_staff = KitchenStaff.objects.filter(is_active=True)
+        
+        text = f"🔔 YANGI BUYURTMA!\n\n"
+        text += f"📋 Buyurtma #{order.id}\n"
+        text += f"👤 Mijoz: {order.user.first_name or 'Noma\'lum'}\n"
+        text += f"📱 Telefon: {order.phone_number}\n"
+        text += f"📍 Manzil: {order.delivery_address}\n"
+        text += f" Summa: {order.total_amount:,} so'm\n"
+        text += f"📅 Vaqt: {order.created_at.strftime('%d.%m.%Y %H:%M')}\n\n"
+        
+        text += "📦 Mahsulotlar:\n"
+        for item in order.items.all():
+            text += f"• {item.product.name} x{item.quantity} = {item.get_total_price():,} so'm\n"
+        
+        # Kitchen staff'larga yuborish (agar telegram_id bo'lsa)
+        for staff in kitchen_staff:
+            if hasattr(staff, 'telegram_user_id') and staff.telegram_user_id:
+                try:
+                    send_safe_message(staff.telegram_user_id, text)
+                except:
+                    pass
+        
+        print(f"📨 Buyurtma #{order.id} oshpazga yuborildi")
+        
+    except Exception as e:
+        logger.error(f"Oshpazga xabar yuborishda xatolik: {e}")
+
 def setup_handlers():
     """Bot handler'larni sozlash"""
     bot = get_bot()
@@ -477,45 +602,11 @@ def setup_handlers():
                 }
             )
             
-            # Agar foydalanuvchi ro'yxatdan o'tmagan bo'lsa, ro'yxatdan o'tkazish
-            if not user.is_registered:
-                start_registration(message.chat.id, user)
-            else:
-                # Ro'yxatdan o'tgan foydalanuvchi uchun asosiy menyu
-                show_main_menu(message.chat.id, user)
+            # Ro'yxatdan o'tgan foydalanuvchi uchun asosiy menyu
+            show_main_menu(message.chat.id, user)
             
         except Exception as e:
             logger.error(f"Start xatosi: {e}")
-            send_safe_message(message.chat.id, "❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.")
-
-    @bot.message_handler(content_types=['contact'])
-    def handle_contact(message):
-        """Telefon raqamini qabul qilish"""
-        try:
-            user_id = message.from_user.id
-            user = TelegramUser.objects.get(user_id=user_id)
-            
-            if message.contact and message.contact.user_id == user_id:
-                # O'z telefon raqamini yuborgan
-                user.phone_number = message.contact.phone_number
-                user.save()
-                
-                # Keyingi qadam - to'liq ismni so'rash
-                ask_full_name(message.chat.id, user)
-            else:
-                # Boshqa birovning telefon raqamini yuborgan
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-                contact_btn = types.KeyboardButton("📱 Telefon raqamni yuborish", request_contact=True)
-                markup.add(contact_btn)
-                
-                send_safe_message(
-                    message.chat.id,
-                    "❌ Iltimos, o'zingizning telefon raqamingizni yuboring!",
-                    markup
-                )
-                
-        except Exception as e:
-            logger.error(f"Contact handling xatosi: {e}")
             send_safe_message(message.chat.id, "❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.")
 
     @bot.callback_query_handler(func=lambda call: True)
@@ -526,17 +617,7 @@ def setup_handlers():
             user = TelegramUser.objects.get(user_id=user_id)
             data = call.data
             
-            if data.startswith("dorm_"):
-                # Yotoqxona tanlash
-                dorm_id = int(data.split("_")[1])
-                dormitory = Dormitory.objects.get(id=dorm_id)
-                user.dormitory = dormitory
-                user.save()
-                
-                ask_room_number(call.message.chat.id, user)
-                bot.delete_message(call.message.chat.id, call.message.message_id)
-                
-            elif data.startswith("cat_"):
+            if data.startswith("cat_"):
                 # Kategoriya tanlash
                 category_id = int(data.split("_")[1])
                 show_category_products(call.message.chat.id, user, category_id)
@@ -585,6 +666,24 @@ def setup_handlers():
                 # Savatni ko'rish
                 show_cart(call.message.chat.id, user)
                 
+            elif data == "place_order":
+                # Buyurtma berish
+                place_order(call.message.chat.id, user)
+                
+            elif data.startswith("select_dorm_"):
+                # Yotoqxona tanlash - to'g'ridan-to'g'ri xona raqamini so'rash
+                dormitory_id = int(data.split("_")[2])
+                ask_room_number(call.message.chat.id, user, dormitory_id)
+                
+            elif data == "cancel_order":
+                # Buyurtmani bekor qilish
+                OrderSession.objects.filter(user=user, is_completed=False).delete()
+                send_safe_message(call.message.chat.id, "❌ Buyurtma bekor qilindi.", get_main_menu_keyboard())
+                
+            elif data == "my_orders":
+                # Buyurtmalarni ko'rish
+                show_my_orders(call.message.chat.id, user)
+                
             elif data == "back_to_categories":
                 # Kategoriyalarga qaytish
                 show_menu_categories(call.message.chat.id, user)
@@ -592,14 +691,6 @@ def setup_handlers():
             elif data == "back_to_main":
                 # Bosh menyuga qaytish
                 show_main_menu(call.message.chat.id, user)
-                
-            elif data == "place_order":
-                # Buyurtma berish
-                place_order(call.message.chat.id, user)
-                
-            elif data == "my_orders":
-                # Buyurtmalarni ko'rish
-                show_user_orders(call.message.chat.id, user)
             
             bot.answer_callback_query(call.id)
             
@@ -621,40 +712,29 @@ def setup_handlers():
                 send_safe_message(message.chat.id, "Iltimos, /start buyrug'ini bosing.")
                 return
             
-            # Ro'yxatdan o'tish jarayoni
-            if not user.is_registered:
-                # To'liq ismni kutmoqda
-                if not user.full_name and user.phone_number:
-                    user.full_name = text
-                    user.save()
-                    ask_dormitory(message.chat.id, user)
+            # Buyurtma sessiyasi uchun xona raqamini kutish
+            active_session = OrderSession.objects.filter(user=user, is_completed=False).first()
+            if active_session and not active_session.room_number:
+                # Xona raqami kiritildi
+                room_number = text.strip()
+                if room_number.isdigit() or room_number.replace('-', '').replace('/', '').isalnum():
+                    confirm_order(message.chat.id, user, room_number)
                     return
-                
-                # Xona raqamini kutmoqda
-                if not user.room_number and user.dormitory:
-                    user.room_number = text
-                    user.is_registered = True
-                    from django.utils import timezone
-                    user.registration_date = timezone.now()
-                    user.save()
-                    
-                    # Ro'yxatdan o'tish tugallandi
-                    complete_registration(message.chat.id, user)
+                else:
+                    send_safe_message(message.chat.id, "❌ Iltimos, to'g'ri xona raqamini kiriting (masalan: 101, 205, 315)")
                     return
             
-            # Ro'yxatdan o'tgan foydalanuvchi uchun asosiy xabarlar
+            # Asosiy xabarlar
             if text == "🍕 Menyu":
                 show_menu_categories(message.chat.id, user)
             elif text == "🛒 Savat":
                 show_cart(message.chat.id, user)
             elif text == "📋 Buyurtmalarim":
-                show_user_orders(message.chat.id, user)
+                show_my_orders(message.chat.id, user)
             elif text == "ℹ️ Ma'lumot":
                 info_text = f"ℹ️ Sizning ma'lumotlaringiz:\n\n"
-                info_text += f"👤 Ism: {user.full_name}\n"
-                info_text += f"📱 Telefon: {user.phone_number}\n"
-                info_text += f"🏠 Yotoqxona: {user.dormitory.name if user.dormitory else 'Tanlanmagan'}\n"
-                info_text += f"🚪 Xona: {user.room_number}"
+                info_text += f"👤 Ism: {user.first_name or 'Noma\'lum'}\n"
+                info_text += f"📱 Username: @{user.username or 'Noma\'lum'}"
                 send_safe_message(message.chat.id, info_text, get_main_menu_keyboard())
             else:
                 # Noma'lum xabar
@@ -667,55 +747,37 @@ def setup_handlers():
 def start_bot():
     """Botni ishga tushirish"""
     try:
-        print("🚀 Bot ishga tushirish jarayoni boshlandi...")
+        print('🚀 Bot ishga tushirish jarayoni boshlandi...')
         bot = get_bot()
         if not bot:
-            logger.error("❌ Bot yaratilmadi!")
-            print("❌ Bot yaratilmadi!")
+            print('❌ Bot yaratilmadi!')
             return
         
+        # Handler'larni sozlash
         setup_handlers()
         
-        logger.info("🚀 Bot polling rejimida ishga tushmoqda...")
-        print("🚀 Bot polling rejimida ishga tushmoqda...")
+        print('🚀 Bot polling rejimida ishga tushmoqda...')
         
-        # Bot'ni polling rejimida ishga tushirish - xatolikdan himoyalash bilan
         while True:
             try:
                 bot.infinity_polling(timeout=10, long_polling_timeout=5, none_stop=False, interval=1)
-                break  # Agar muvaffaqiyatli ishga tushsa, break
+                break
             except Exception as polling_error:
-                logger.error(f"Polling xatosi: {polling_error}")
-                print(f"⚠️ Polling xatosi: {polling_error}")
+                print(f'⚠️ Polling xatosi: {polling_error}')
                 
-                # Agar 409 xatosi bo'lsa, kutish va qaytadan urinish
-                if "409" in str(polling_error):
-                    print("⏳ 409 xatosi - 10 soniya kutish...")
+                if '409' in str(polling_error):
+                    print('⏳ 409 xatosi - 10 soniya kutish...')
                     time.sleep(10)
-                    # Bot instance'ni qaytadan yaratish
                     global bot_instance
                     bot_instance = None
                     bot = get_bot()
                     if not bot:
                         break
                 else:
-                    # Boshqa xatoliklar uchun qisqa kutish
                     time.sleep(5)
         
     except Exception as e:
-        logger.error(f"Bot ishga tushirishda xatolik: {e}")
-        print(f"❌ Bot ishga tushirishda xatolik: {e}")
+        print(f'❌ Bot ishga tushirishda xatolik: {e}')
 
-def stop_bot():
-    """Botni to'xtatish"""
-    global bot_instance
-    if bot_instance:
-        try:
-            bot_instance.stop_polling()
-            bot_instance = None
-            logger.info("🛑 Bot to'xtatildi")
-        except Exception as e:
-            logger.error(f"Bot to'xtatishda xatolik: {e}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     start_bot()
