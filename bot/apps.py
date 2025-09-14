@@ -16,18 +16,17 @@ class BotConfig(AppConfig):
         import sys
         
         # Test va migration paytida bot ishlatmaslik
-        if any(cmd in sys.argv for cmd in ['test', 'migrate', 'makemigrations', 'collectstatic']):
+        if any(cmd in sys.argv for cmd in ['test', 'migrate', 'makemigrations', 'collectstatic', 'check']):
             return
             
-        # Runserver'da faqat main process'da ishga tushirish
-        if 'runserver' in sys.argv:
-            if os.environ.get('RUN_MAIN') == 'true':
-                # Runserver'ning main process'i
-                print("🚀 Django server ishga tushdi, bot ham ishga tushirilmoqda...")
-                self.start_telegram_bot()
-        else:
-            # Boshqa commandlar uchun (production mode)
+        # Faqat local development'da avtomatik ishga tushirish
+        if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') == 'true':
+            # Runserver'ning main process'i (local development)
+            print("🚀 Django server ishga tushdi, bot ham ishga tushirilmoqda...")
             self.start_telegram_bot()
+        
+        # PythonAnywhere va production'da manual ishga tushirish kerak
+        # start_bot.py skriptini ishga tushiring
     
     def start_telegram_bot(self):
         """Telegram botni background thread'da ishga tushirish"""

@@ -8,15 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key')
 
-DEBUG = True
-
+DEBUG = os.getenv('DEBUG', 'True').lower() in ['true', '1', 'yes']
 
 DOMEN = 'dastavka.pythonanywhere.com'
 # DOMEN = 'apiombor.kspi.uz'
 LOCAL_DOMEN = '127.0.0.1'
 
-ALLOWED_HOSTS = ['.kokanddeveloper.uz', DOMEN, 'localhost', LOCAL_DOMEN]
-CSRF_TRUSTED_ORIGINS=[f'https://{DOMEN}', f'http://{DOMEN}']
+ALLOWED_HOSTS = ['.kokanddeveloper.uz', DOMEN, 'localhost', LOCAL_DOMEN, '.pythonanywhere.com']
+CSRF_TRUSTED_ORIGINS=[f'https://{DOMEN}', f'http://{DOMEN}', 'https://*.pythonanywhere.com']
 
 
 INSTALLED_APPS = [
