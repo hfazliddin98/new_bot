@@ -23,7 +23,7 @@ except:
 
 import telebot
 from telebot import types
-from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory, OrderSession
+from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, Dormitory, OrderSession
 from decimal import Decimal
 
 # Spam himoyasi

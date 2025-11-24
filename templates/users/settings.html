@@ -1,0 +1,66 @@
+{% extends base_template %}
+
+{% block title %}Sozlamalar{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-dark fw-bold mb-4"><i class="fas fa-cog me-2"></i> Sozlamalar</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="text-dark fw-bold mb-0"><i class="fas fa-user-edit me-2"></i> Profil ma'lumotlarini yangilash</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label text-dark fw-semibold">Ism</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label text-dark fw-semibold">Familiya</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                    </div>
+                    <button type="submit" name="update_profile" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-2"></i> Saqlash
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="text-dark fw-bold mb-0"><i class="fas fa-key me-2"></i> Parolni o'zgartirish</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="old_password" class="form-label text-dark fw-semibold">Eski parol</label>
+                        <input type="password" class="form-control" id="old_password" name="old_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label text-dark fw-semibold">Yangi parol</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        <small class="text-secondary">Kamida 8 ta belgi</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label text-dark fw-semibold">Parolni tasdiqlang</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    <button type="submit" name="change_password" class="btn btn-warning w-100">
+                        <i class="fas fa-lock me-2"></i> Parolni o'zgartirish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

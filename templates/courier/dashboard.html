@@ -30,15 +30,17 @@
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-xl-3 col-lg-6 mb-3">
-        <div class="card stats-card h-100">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-1 text-white">{{ stats.ready_orders }}</h3>
-                        <p class="mb-0 text-light">Tayyor buyurtmalar</p>
+                        <h3 class="mb-1 text-dark fw-bold">{{ stats.ready_orders }}</h3>
+                        <p class="mb-0 text-secondary">Tayyor buyurtmalar</p>
                     </div>
                     <div>
-                        <i class="fas fa-box fa-2x text-white opacity-75"></i>
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-box fa-2x text-primary"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,15 +48,17 @@
     </div>
     
     <div class="col-xl-3 col-lg-6 mb-3">
-        <div class="card stats-card-info h-100">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-1 text-white">{{ stats.on_way_orders }}</h3>
-                        <p class="mb-0 text-light">Yo'lda</p>
+                        <h3 class="mb-1 text-dark fw-bold">{{ stats.on_way_orders }}</h3>
+                        <p class="mb-0 text-secondary">Yo'lda</p>
                     </div>
                     <div>
-                        <i class="fas fa-route fa-2x text-white opacity-75"></i>
+                        <div class="bg-info bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-route fa-2x text-info"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -62,15 +66,17 @@
     </div>
     
     <div class="col-xl-3 col-lg-6 mb-3">
-        <div class="card stats-card-success h-100">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-1 text-white">{{ stats.delivered_today }}</h3>
-                        <p class="mb-0 text-light">Bugun yetkazildi</p>
+                        <h3 class="mb-1 text-dark fw-bold">{{ stats.delivered_today }}</h3>
+                        <p class="mb-0 text-secondary">Bugun yetkazildi</p>
                     </div>
                     <div>
-                        <i class="fas fa-check-circle fa-2x text-white opacity-75"></i>
+                        <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,15 +84,17 @@
     </div>
     
     <div class="col-xl-3 col-lg-6 mb-3">
-        <div class="card stats-card-warning h-100">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-1 text-white">{{ stats.total_earnings|floatformat:0 }}</h3>
-                        <p class="mb-0 text-light">Umumiy daromad (so'm)</p>
+                        <h3 class="mb-1 text-dark fw-bold">{{ stats.total_earnings|floatformat:0 }}</h3>
+                        <p class="mb-0 text-secondary">Umumiy daromad (so'm)</p>
                     </div>
                     <div>
-                        <i class="fas fa-money-bill-wave fa-2x text-white opacity-75"></i>
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            <i class="fas fa-money-bill-wave fa-2x text-warning"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -96,94 +104,101 @@
 
 <!-- Active Deliveries -->
 <div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-motorcycle"></i> Faol yetkazishlar</h5>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-1 text-dark fw-bold"><i class="fas fa-motorcycle me-2"></i> Faol yetkazishlar</h5>
+                <small class="text-secondary">Sizga biriktirilgan va jarayondagi buyurtmalar</small>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                 {% if active_deliveries %}
                     {% for delivery in active_deliveries %}
-                        <div class="card mb-2">
+                        <div class="card mb-3 border-0 shadow-sm">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="card-title">#{{ delivery.order.id }}</h6>
-                                        <p class="card-text">
-                                            <i class="fas fa-user"></i> {{ delivery.order.user.get_display_name }}<br>
-                                            <i class="fas fa-map-marker-alt"></i> {{ delivery.order.dormitory.name }}<br>
-                                            <i class="fas fa-door-open"></i> Xona: {{ delivery.order.room_number }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span class="badge bg-{{ delivery.get_status_color }}">
-                                            {{ delivery.get_status_display }}
-                                        </span>
-                                        <div class="btn-group mt-2" role="group">
-                                            {% if delivery.status == 'assigned' %}
-                                                <button class="btn btn-sm btn-success" data-delivery-id="{{ delivery.id }}" onclick="pickupOrder(this.dataset.deliveryId)">
-                                                    <i class="fas fa-hand-paper"></i> Olish
-                                                </button>
-                                            {% elif delivery.status == 'picked_up' %}
-                                                <button class="btn btn-sm btn-primary" data-delivery-id="{{ delivery.id }}" onclick="startDelivery(this.dataset.deliveryId)">
-                                                    <i class="fas fa-route"></i> Yo'lga chiqish
-                                                </button>
-                                            {% elif delivery.status == 'on_way' %}
-                                                <button class="btn btn-sm btn-success" data-delivery-id="{{ delivery.id }}" onclick="completeDelivery(this.dataset.deliveryId)">
-                                                    <i class="fas fa-check"></i> Yetkazildi
-                                                </button>
-                                            {% endif %}
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title text-dark fw-bold mb-2">Buyurtma #{{ delivery.order.id }}</h6>
+                                        <div class="mb-2">
+                                            <small class="d-block mb-1"><i class="fas fa-user me-2 text-primary"></i> {{ delivery.order.user.get_display_name }}</small>
+                                            <small class="d-block mb-1"><i class="fas fa-map-marker-alt me-2 text-danger"></i> {{ delivery.order.dormitory.name }}</small>
+                                            <small class="d-block mb-1"><i class="fas fa-door-open me-2 text-info"></i> Xona: {{ delivery.order.room_number }}</small>
+                                            <small class="d-block mb-1"><i class="fas fa-box me-2 text-warning"></i> {{ delivery.order.items.count }} ta mahsulot</small>
+                                            <small class="d-block"><i class="fas fa-money-bill me-2 text-success"></i> <strong>{{ delivery.order.total_amount|floatformat:0 }} so'm</strong></small>
                                         </div>
                                     </div>
+                                    <div class="text-end ms-3">
+                                        <span class="badge bg-{{ delivery.get_status_color }} mb-2">
+                                            {{ delivery.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    {% if delivery.status == 'assigned' %}
+                                        <button class="btn btn-success" data-delivery-id="{{ delivery.id }}" onclick="pickupOrder(this.dataset.deliveryId)">
+                                            <i class="fas fa-box-open me-2"></i> Oshxonadan olib ketish
+                                        </button>
+                                    {% elif delivery.status == 'picked_up' %}
+                                        <button class="btn btn-primary" data-delivery-id="{{ delivery.id }}" onclick="startDelivery(this.dataset.deliveryId)">
+                                            <i class="fas fa-shipping-fast me-2"></i> Yetkazishni boshlash
+                                        </button>
+                                    {% elif delivery.status == 'on_way' %}
+                                        <button class="btn btn-success" data-delivery-id="{{ delivery.id }}" onclick="completeDelivery(this.dataset.deliveryId)">
+                                            <i class="fas fa-check-circle me-2"></i> Yetkazib berdim
+                                        </button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-motorcycle fa-3x text-muted"></i>
-                        <p class="mt-3 text-muted">Hozircha faol yetkazishlar yo'q</p>
+                    <div class="text-center py-5">
+                        <i class="fas fa-motorcycle fa-3x text-muted mb-3"></i>
+                        <p class="text-secondary mb-0">Faol yetkazishlar yo'q</p>
+                        <small class="text-muted">Buyurtmalarni qabul qilganingizda bu yerda ko'rsatiladi</small>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-box"></i> Tayyor buyurtmalar</h5>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-1 text-dark fw-bold"><i class="fas fa-box me-2"></i> Tayyor buyurtmalar</h5>
+                <small class="text-secondary">Oshxonada tayyor bo'lgan buyurtmalarni qabul qiling</small>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                 {% if ready_orders %}
                     {% for delivery in ready_orders %}
-                        <div class="card mb-2">
+                        <div class="card mb-3 border-0 shadow-sm">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="card-title">#{{ delivery.order.id }}</h6>
-                                        <p class="card-text">
-                                            <i class="fas fa-user"></i> {{ delivery.order.user.get_display_name }}<br>
-                                            <i class="fas fa-map-marker-alt"></i> {{ delivery.order.dormitory.name }}, {{ delivery.order.room_number }}-xona<br>
-                                            <i class="fas fa-money-bill"></i> {{ delivery.order.total_amount|floatformat:0 }} so'm
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span class="badge bg-success">Tayyor</span>
-                                        <div class="mt-2">
-                                            <button class="btn btn-sm btn-primary" data-delivery-id="{{ delivery.id }}" onclick="takeOrder(this.dataset.deliveryId)">
-                                                <i class="fas fa-hand-paper"></i> Olish
-                                            </button>
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title text-dark fw-bold mb-2">Buyurtma #{{ delivery.order.id }}</h6>
+                                        <div class="mb-2">
+                                            <small class="d-block mb-1"><i class="fas fa-user me-2 text-primary"></i> {{ delivery.order.user.get_display_name }}</small>
+                                            <small class="d-block mb-1"><i class="fas fa-map-marker-alt me-2 text-danger"></i> {{ delivery.order.dormitory.name }}, Xona {{ delivery.order.room_number }}</small>
+                                            <small class="d-block mb-1"><i class="fas fa-box me-2 text-info"></i> {{ delivery.order.items.count }} ta mahsulot</small>
+                                            <small class="d-block"><i class="fas fa-money-bill me-2 text-success"></i> <strong>{{ delivery.order.total_amount|floatformat:0 }} so'm</strong></small>
                                         </div>
                                     </div>
+                                    <div class="text-end ms-3">
+                                        <span class="badge bg-success mb-2">Tayyor</span>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <button class="btn btn-primary" data-delivery-id="{{ delivery.id }}" onclick="takeOrder(this.dataset.deliveryId)">
+                                        <i class="fas fa-hand-paper me-2"></i> Qabul qilish
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-box fa-3x text-muted"></i>
-                        <p class="mt-3 text-muted">Tayyor buyurtmalar yo'q</p>
+                    <div class="text-center py-5">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <p class="text-secondary mb-0">Tayyor buyurtmalar yo'q</p>
+                        <small class="text-muted">Oshxonada buyurtma tayyor bo'lganda bu yerda ko'rsatiladi</small>
                     </div>
                 {% endif %}
             </div>
@@ -194,8 +209,43 @@
 
 {% block extra_js %}
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function setButtonLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
+    }
+}
+
+function showSuccessToast(message) {
+    alert(message);
+}
+
+function showErrorToast(message) {
+    alert(message);
+}
+
 function toggleAvailability() {
     const btn = document.getElementById('availabilityBtn');
+    const originalHtml = btn.innerHTML;
     setButtonLoading(btn, true);
     
     fetch('/courier/toggle-availability/', {
@@ -208,17 +258,27 @@ function toggleAvailability() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccessToast('Status muvaffaqiyatli o\'zgartirildi');
-            setTimeout(() => location.reload(), 1000);
+            // Statusni real vaqtda o'zgartirish
+            btn.disabled = false;
+            if (data.is_available) {
+                btn.className = 'btn btn-success';
+                btn.innerHTML = '<i class="fas fa-toggle-on me-2"></i> Mavjud';
+            } else {
+                btn.className = 'btn btn-warning';
+                btn.innerHTML = '<i class="fas fa-toggle-off me-2"></i> Mavjud emas';
+            }
+            alert('Status muvaffaqiyatli o\'zgartirildi');
         } else {
             showErrorToast(data.message || 'Xatolik yuz berdi');
-            setButtonLoading(btn, false);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showErrorToast('Xatolik yuz berdi');
-        setButtonLoading(btn, false);
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
     });
 }
 

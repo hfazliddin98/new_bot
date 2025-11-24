@@ -74,6 +74,13 @@ def dashboard(request):
         'products_count': products_count,
     }
     
+    # AJAX so'rovi uchun JSON qaytarish
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'stats': stats,
+            'total_orders': stats['today_total']
+        })
+    
     return render(request, 'kitchen/dashboard.html', context)
 
 @kitchen_required

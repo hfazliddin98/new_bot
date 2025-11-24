@@ -15,7 +15,7 @@ import telebot
 from telebot import types
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory
+from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, Dormitory
 
 # Logging sozlash
 logging.basicConfig(
@@ -280,18 +280,16 @@ Kerakli bo'limni tanlang:"""
                 user_states[user_id]['state'] = UserState.REGISTRATION_ROOM
                 
                 # Yotoqxonalar ro'yxatini ko'rsatish
-                zones = DeliveryZone.objects.filter(is_active=True)
+                dorms = Dormitory.objects.filter(is_active=True)
                 text = f"✅ *Telefon saqlandi: {phone}*\n\n"
                 text += "🏠 *4-qadam:*\n"
                 text += "Yotoqxonangizni va xona raqamingizni kiriting:\n\n"
                 
-                for zone in zones:
-                    dorms = Dormitory.objects.filter(zone=zone, is_active=True)
-                    if dorms.exists():
-                        text += f"📍 *{zone.name}:*\n"
-                        for dorm in dorms:
-                            text += f"• {dorm.name}\n"
-                        text += "\n"
+                if dorms.exists():
+                    text += f"📍 *Yotoqxonalar:*\n"
+                    for dorm in dorms:
+                        text += f"• {dorm.name}\n"
+                    text += "\n"
                 
                 text += "*Format:* Yotoqxona nomi, Xona raqami\n"
                 text += "*Masalan:* 1-yotoqxona, 101\n"
@@ -417,22 +415,19 @@ Kerakli bo'limni tanlang:"""
                 self.safe_send_message(bot, message.chat.id, "❌ Avval ro'yxatdan o'ting. /start bosing.")
                 return
             
-            zones = DeliveryZone.objects.filter(is_active=True)
+            dorms = Dormitory.objects.filter(is_active=True)
             
-            if not zones.exists():
-                self.safe_send_message(bot, message.chat.id, "❌ Yetkazib berish zonalari mavjud emas!")
+            if not dorms.exists():
+                self.safe_send_message(bot, message.chat.id, "❌ Yotoqxonalar mavjud emas!")
                 return
             
             current_time = timezone.now()
             text = "⏰ *Yetkazib berish soatlari:*\n\n"
             text += f"🕐 Hozirgi vaqt: {current_time.strftime('%H:%M')}\n\n"
             
-            for zone in zones:
-                text += f"📍 *{zone.name}*\n"
-                text += f"🕐 Ish soatlari: {zone.get_working_hours_display()}\n"
-                
-                if zone.is_working_now():
-                    text += "✅ Hozir ishlaydi\n"
+            for dorm in dorms:
+                text += f"📍 *{dorm.name}*\n"
+                text += f"📧 Manzil: {dorm.address}\n"
                     text += f"💰 Yetkazib berish: {zone.delivery_fee:,.0f} so'm\n"
                     text += f"⏱️ Vaqt: {zone.delivery_time} daqiqa\n"
                 else:

@@ -5,11 +5,14 @@ from django.utils import timezone
 from django.db.models import Q, Count, Sum
 from django.contrib import messages
 from datetime import datetime, timedelta
+import logging
 
 from bot.models import Order
 from kitchen.models import OrderProgress
 from .models import CourierStaff, Delivery
 from users.decorators import courier_required
+
+logger = logging.getLogger(__name__)
 
 @courier_required
 def dashboard(request):
@@ -17,8 +20,8 @@ def dashboard(request):
     try:
         courier = CourierStaff.objects.get(user=request.user)
     except CourierStaff.DoesNotExist:
-        messages.error(request, "Siz kuryer emassiz!")
-        return redirect(request.user.get_dashboard_url())
+        messages.error(request, "Kuryer profili topilmadi! Iltimos, admin bilan bog'laning.")
+        return redirect('admin_panel:dashboard' if request.user.role == 'admin' else 'login')
     
     # Statistika
     today = timezone.now().date()
@@ -62,13 +65,13 @@ def dashboard(request):
     active_deliveries = Delivery.objects.filter(
         courier=courier,
         status__in=['assigned', 'picked_up', 'on_way']
-    ).select_related('order__user', 'order__dormitory').order_by('-updated_at')
+    ).select_related('order__user', 'order__dormitory').prefetch_related('order__items__product').order_by('-updated_at')
     
     # Tayyor buyurtmalar
     ready_orders = Delivery.objects.filter(
         status='ready',
         courier__isnull=True
-    ).select_related('order__user', 'order__dormitory').order_by('-updated_at')[:5]
+    ).select_related('order__user', 'order__dormitory').prefetch_related('order__items__product').order_by('-updated_at')[:5]
     
     context = {
         'courier': courier,
@@ -103,8 +106,8 @@ def deliveries_list(request):
     try:
         courier = CourierStaff.objects.get(user=request.user)
     except CourierStaff.DoesNotExist:
-        messages.error(request, "Siz kuryer emassiz!")
-        return redirect(request.user.get_dashboard_url())
+        messages.error(request, "Kuryer profili topilmadi! Iltimos, admin bilan bog'laning.")
+        return redirect('admin_panel:dashboard' if request.user.role == 'admin' else 'login')
     
     # Tayyor buyurtmalarni Delivery obyektlarini yaratish
     ready_orders = Order.objects.filter(
@@ -169,9 +172,9 @@ def take_order(request, delivery_id):
             delivery.assigned_at = timezone.now()
             delivery.save()
             
-            # OrderProgress holatini yangilash
+            # OrderProgress holatini yangilash (assigned, picked_up emas!)
             if hasattr(delivery.order, 'orderprogress'):
-                delivery.order.orderprogress.status = 'picked_up'
+                delivery.order.orderprogress.status = 'assigned'
                 delivery.order.orderprogress.save()
             
             return JsonResponse({'success': True})
@@ -252,6 +255,43 @@ def complete_delivery(request, delivery_id):
                 delivery.order.orderprogress.status = 'delivered'
                 delivery.order.orderprogress.save()
             
+            # Telegram botga xabar yuborish
+            try:
+                from bot.telegram_bot import get_bot
+                from bot.models import TelegramUser
+                
+                print(f"[DEBUG] Telegram xabar yuborish boshlandi. Order #{delivery.order.id}")
+                print(f"[DEBUG] Order phone_number: {delivery.order.phone_number}")
+                
+                # Telegram user'ni topish (phone_number orqali)
+                telegram_user = TelegramUser.objects.filter(
+                    phone_number=delivery.order.phone_number
+                ).first()
+                
+                print(f"[DEBUG] Telegram user topildi: {telegram_user}")
+                
+                if telegram_user and telegram_user.user_id:
+                    print(f"[DEBUG] Telegram user_id: {telegram_user.user_id}")
+                    bot = get_bot()
+                    message = f"✅ Buyurtma #{delivery.order.id} muvaffaqiyatli yetkazib berildi!\n\n"
+                    message += f"📦 Mahsulotlar: {delivery.order.items.count()} ta\n"
+                    message += f"💰 Summa: {delivery.order.total_amount:,.0f} so'm\n"
+                    message += f"🚚 Kuryer: {courier.full_name}\n"
+                    message += f"⏰ Yetkazilgan vaqt: {delivery.delivered_at.strftime('%d.%m.%Y %H:%M')}"
+                    
+                    print(f"[DEBUG] Xabar yuborilmoqda: {message[:50]}...")
+                    bot.send_message(telegram_user.user_id, message)
+                    print(f"[SUCCESS] Telegram xabar yuborildi: Order #{delivery.order.id}")
+                    logger.info(f"Telegram xabar yuborildi: Order #{delivery.order.id}")
+                else:
+                    print(f"[WARNING] Telegram user topilmadi yoki user_id yo'q. Phone: {delivery.order.phone_number}")
+                    logger.warning(f"Telegram user topilmadi: {delivery.order.phone_number}")
+            except Exception as e:
+                print(f"[ERROR] Telegram xabar yuborishda xatolik: {e}")
+                import traceback
+                traceback.print_exc()
+                logger.error(f"Telegram xabar yuborishda xatolik: {e}")
+            
             return JsonResponse({'success': True})
             
         except Exception as e:
@@ -265,8 +305,8 @@ def delivery_history(request):
     try:
         courier = CourierStaff.objects.get(user=request.user)
     except CourierStaff.DoesNotExist:
-        messages.error(request, "Siz kuryer emassiz!")
-        return redirect(request.user.get_dashboard_url())
+        messages.error(request, "Kuryer profili topilmadi! Iltimos, admin bilan bog'laning.")
+        return redirect('admin_panel:dashboard' if request.user.role == 'admin' else 'login')
     
     # Filter
     period_filter = request.GET.get('period')

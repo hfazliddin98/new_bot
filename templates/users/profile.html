@@ -1,0 +1,99 @@
+{% extends base_template %}
+
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-dark fw-bold mb-4"><i class="fas fa-user me-2"></i> Profil</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user fa-4x text-primary"></i>
+                    </div>
+                </div>
+                <h4 class="text-dark fw-bold">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-secondary mb-3">@{{ user.username }}</p>
+                
+                {% if staff_type == 'kitchen' %}
+                    <span class="badge bg-success text-white">Oshxona xodimi</span>
+                {% elif staff_type == 'courier' %}
+                    <span class="badge bg-info text-white">Kuryer</span>
+                {% else %}
+                    <span class="badge bg-danger text-white">Administrator</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="text-dark fw-bold mb-0"><i class="fas fa-info-circle me-2"></i> Shaxsiy ma'lumotlar</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Username:</div>
+                    <div class="col-md-8 text-dark">{{ user.username }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Ism:</div>
+                    <div class="col-md-8 text-dark">{{ user.first_name|default:"—" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Familiya:</div>
+                    <div class="col-md-8 text-dark">{{ user.last_name|default:"—" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Rol:</div>
+                    <div class="col-md-8 text-dark">{{ user.get_role_display }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 fw-semibold text-secondary">Ro'yxatdan o'tgan:</div>
+                    <div class="col-md-8 text-dark">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if staff_info %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="text-dark fw-bold mb-0"><i class="fas fa-briefcase me-2"></i> Xodim ma'lumotlari</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">To'liq ism:</div>
+                    <div class="col-md-8 text-dark">{{ staff_info.full_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Telefon:</div>
+                    <div class="col-md-8 text-dark">{{ staff_info.phone_number }}</div>
+                </div>
+                {% if staff_type == 'courier' %}
+                <div class="row mb-3">
+                    <div class="col-md-4 fw-semibold text-secondary">Holat:</div>
+                    <div class="col-md-8">
+                        {% if staff_info.is_available %}
+                            <span class="badge bg-success text-white">Aktiv</span>
+                        {% else %}
+                            <span class="badge bg-secondary text-white">Nofaol</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-md-4 fw-semibold text-secondary">Qo'shilgan sana:</div>
+                    <div class="col-md-8 text-dark">{{ staff_info.created_at|date:"d.m.Y" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

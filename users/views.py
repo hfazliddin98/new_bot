@@ -429,3 +429,87 @@ def delete_dormitory(request, dormitory_id):
         'item_type': 'yotoqxona',
         'title': f'Yotoqxona o\'chirish - {dormitory.name}'
     })
+
+
+@login_required
+def user_profile(request):
+    """Foydalanuvchi profili"""
+    user = request.user
+    
+    # Foydalanuvchi roli bo'yicha qo'shimcha ma'lumot va base template
+    staff_info = None
+    base_template = 'common_base.html'
+    
+    if hasattr(user, 'kitchenstaff'):
+        staff_info = user.kitchenstaff
+        staff_type = 'kitchen'
+        base_template = 'kitchen/base.html'
+    elif hasattr(user, 'courierstaff'):
+        staff_info = user.courierstaff
+        staff_type = 'courier'
+        base_template = 'courier/base.html'
+    else:
+        staff_type = 'admin'
+        base_template = 'admin_panel/base.html'
+    
+    context = {
+        'user': user,
+        'staff_info': staff_info,
+        'staff_type': staff_type,
+        'base_template': base_template,
+    }
+    return render(request, 'users/profile.html', context)
+
+
+@login_required
+def user_settings(request):
+    """Foydalanuvchi sozlamalari"""
+    # Base template aniqlash
+    base_template = 'common_base.html'
+    if hasattr(request.user, 'kitchenstaff'):
+        base_template = 'kitchen/base.html'
+    elif hasattr(request.user, 'courierstaff'):
+        base_template = 'courier/base.html'
+    else:
+        base_template = 'admin_panel/base.html'
+    
+    user = request.user
+    
+    if request.method == 'POST':
+        # Parolni o'zgartirish
+        if 'change_password' in request.POST:
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if not user.check_password(old_password):
+                messages.error(request, "Eski parol noto'g'ri!")
+            elif new_password != confirm_password:
+                messages.error(request, "Yangi parollar mos kelmadi!")
+            elif len(new_password) < 8:
+                messages.error(request, "Parol kamida 8 ta belgidan iborat bo'lishi kerak!")
+            else:
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Parol muvaffaqiyatli o'zgartirildi!")
+                return redirect('user_settings')
+        
+        # Profil ma'lumotlarini yangilash
+        elif 'update_profile' in request.POST:
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.save()
+            messages.success(request, "Profil ma'lumotlari yangilandi!")
+            return redirect('user_settings')
+    
+    context = {
+        'user': user,
+        'base_template': base_template,
+    }
+    return render(request, 'users/settings.html', context)

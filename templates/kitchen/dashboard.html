@@ -4,11 +4,10 @@
 
 {% block content %}
 {% csrf_token %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-utensils"></i> Oshxona Dashboard</h2>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-dark fw-bold"><i class="fas fa-utensils me-2"></i> Oshxona Dashboard</h2>
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">
                         <i class="fas fa-sync"></i> Yangilash
@@ -24,19 +23,21 @@
     <!-- Buyurtmalar statistikasi -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card stats-card bg-gradient-danger border-0 fade-in">
+            <div class="card border-0 shadow-sm fade-in h-100">
                 <div class="card-body text-center">
-                    <div class="stats-icon mb-3">
-                        <i class="fas fa-exclamation-circle fa-3x"></i>
+                    <div class="mb-3">
+                        <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger"></i>
+                        </div>
                     </div>
-                    <div class="stats-number" data-target="{{ stats.new_orders }}">0</div>
-                    <div class="stats-label">Yangi buyurtmalar</div>
-                    <div class="progress mt-3" style="height: 4px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 100%"></div>
+                    <h2 class="fw-bold text-dark mb-2" data-target="{{ stats.new_orders }}">0</h2>
+                    <p class="text-dark mb-3 fw-semibold">Yangi buyurtmalar</p>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0 text-center">
-                    <a href="{% url 'kitchen:orders' %}?status=new" class="btn btn-outline-light btn-sm">
+                <div class="card-footer bg-white border-0 text-center">
+                    <a href="{% url 'kitchen:orders' %}?status=new" class="btn btn-danger btn-sm w-100">
                         <i class="fas fa-arrow-right me-1"></i>Ko'rish
                     </a>
                 </div>
@@ -44,19 +45,21 @@
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card stats-card bg-primary border-0 fade-in" style="animation-delay: 0.1s;">
+            <div class="card border-0 shadow-sm fade-in h-100" style="animation-delay: 0.1s;">
                 <div class="card-body text-center">
-                    <div class="stats-icon mb-3">
-                        <i class="fas fa-fire fa-3x"></i>
+                    <div class="mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                            <i class="fas fa-fire fa-3x text-primary"></i>
+                        </div>
                     </div>
-                    <div class="stats-number" data-target="{{ stats.preparing_orders }}">0</div>
-                    <div class="stats-label">Tayyorlanmoqda</div>
-                    <div class="progress mt-3" style="height: 4px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 85%"></div>
+                    <h2 class="fw-bold text-dark mb-2" data-target="{{ stats.preparing_orders }}">0</h2>
+                    <p class="text-dark mb-3 fw-semibold">Tayyorlanmoqda</p>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 85%"></div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0 text-center">
-                    <a href="{% url 'kitchen:preparing' %}" class="btn btn-outline-light btn-sm">
+                <div class="card-footer bg-white border-0 text-center">
+                    <a href="{% url 'kitchen:preparing' %}" class="btn btn-primary btn-sm w-100">
                         <i class="fas fa-arrow-right me-1"></i>Ko'rish
                     </a>
                 </div>
@@ -64,19 +67,21 @@
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card stats-card bg-success border-0 fade-in" style="animation-delay: 0.2s;">
+            <div class="card border-0 shadow-sm fade-in h-100" style="animation-delay: 0.2s;">
                 <div class="card-body text-center">
-                    <div class="stats-icon mb-3">
-                        <i class="fas fa-check-circle fa-3x"></i>
+                    <div class="mb-3">
+                        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                            <i class="fas fa-check-circle fa-3x text-success"></i>
+                        </div>
                     </div>
-                    <div class="stats-number" data-target="{{ stats.ready_orders }}">0</div>
-                    <div class="stats-label">Tayyor</div>
-                    <div class="progress mt-3" style="height: 4px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 70%"></div>
+                    <h2 class="fw-bold text-dark mb-2" data-target="{{ stats.ready_orders }}">0</h2>
+                    <p class="text-dark mb-3 fw-semibold">Tayyor</p>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 70%"></div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0 text-center">
-                    <a href="{% url 'kitchen:ready' %}" class="btn btn-outline-light btn-sm">
+                <div class="card-footer bg-white border-0 text-center">
+                    <a href="{% url 'kitchen:ready' %}" class="btn btn-success btn-sm w-100">
                         <i class="fas fa-arrow-right me-1"></i>Ko'rish
                     </a>
                 </div>
@@ -84,19 +89,21 @@
         </div>
         
         <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card stats-card bg-info border-0 fade-in" style="animation-delay: 0.3s;">
+            <div class="card border-0 shadow-sm fade-in h-100" style="animation-delay: 0.3s;">
                 <div class="card-body text-center">
-                    <div class="stats-icon mb-3">
-                        <i class="fas fa-chart-bar fa-3x"></i>
+                    <div class="mb-3">
+                        <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                            <i class="fas fa-chart-bar fa-3x text-info"></i>
+                        </div>
                     </div>
-                    <div class="stats-number" data-target="{{ stats.today_total }}">0</div>
-                    <div class="stats-label">Bugungi jami</div>
-                    <div class="progress mt-3" style="height: 4px;">
-                        <div class="progress-bar bg-white" role="progressbar" style="width: 60%"></div>
+                    <h2 class="fw-bold text-dark mb-2" data-target="{{ stats.today_total }}">0</h2>
+                    <p class="text-dark mb-3 fw-semibold">Bugungi jami</p>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
                     </div>
                 </div>
-                <div class="card-footer bg-transparent border-0 text-center">
-                    <a href="{% url 'kitchen:orders' %}" class="btn btn-outline-light btn-sm">
+                <div class="card-footer bg-white border-0 text-center">
+                    <a href="{% url 'kitchen:orders' %}" class="btn btn-info btn-sm w-100">
                         <i class="fas fa-arrow-right me-1"></i>Ko'rish
                     </a>
                 </div>
@@ -115,7 +122,7 @@
                         </div>
                     </div>
                     <h3 class="fw-bold text-warning mb-2">{{ categories_count }}</h3>
-                    <p class="text-muted mb-3">Kategoriyalar</p>
+                    <p class="text-dark mb-3">Kategoriyalar</p>
                     <a href="{% url 'kitchen:manage_categories' %}" class="btn btn-warning btn-sm rounded-pill px-4">
                         <i class="fas fa-eye me-1"></i>Ko'rish
                     </a>
@@ -132,7 +139,7 @@
                         </div>
                     </div>
                     <h3 class="fw-bold text-info mb-2">{{ products_count }}</h3>
-                    <p class="text-muted mb-3">Mahsulotlar</p>
+                    <p class="text-dark mb-3">Mahsulotlar</p>
                     <a href="{% url 'kitchen:manage_products' %}" class="btn btn-info btn-sm rounded-pill px-4">
                         <i class="fas fa-eye me-1"></i>Ko'rish
                     </a>
@@ -149,7 +156,7 @@
                         </div>
                     </div>
                     <h5 class="fw-bold text-secondary mb-2">Yangi qo'shish</h5>
-                    <p class="text-muted mb-3">Element yaratish</p>
+                    <p class="text-dark mb-3">Element yaratish</p>
                     <div class="d-flex gap-2 justify-content-center">
                         <a href="{% url 'kitchen:add_product' %}" class="btn btn-success btn-sm rounded-pill px-3">
                             <i class="fas fa-plus me-1"></i>Mahsulot
@@ -164,12 +171,12 @@
     </div>
 
     <!-- So'nggi buyurtmalar -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">
-                <i class="fas fa-list"></i> So'nggi buyurtmalar
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0 text-dark fw-bold">
+                <i class="fas fa-list me-2"></i> So'nggi buyurtmalar
                 <a href="{% url 'kitchen:orders' %}" class="btn btn-sm btn-outline-primary float-end">
-                    <i class="fas fa-eye"></i> Barchasini ko'rish
+                    <i class="fas fa-eye me-1"></i> Barchasini ko'rish
                 </a>
             </h5>
         </div>
@@ -194,7 +201,7 @@
                             <td><strong>#{{ order.id }}</strong></td>
                             <td>
                                 <i class="fas fa-user"></i> {{ order.user.get_display_name }}
-                                <br><small class="text-muted">{{ order.delivery_address }}</small>
+                                <br><small class="text-secondary">{{ order.delivery_address }}</small>
                             </td>
                             <td>
                                 {% for item in order.items.all %}
@@ -216,7 +223,7 @@
                             </td>
                             <td>
                                 <small>{{ order.created_at|date:"H:i" }}</small>
-                                <br><small class="text-muted">{{ order.created_at|date:"d.m.Y" }}</small>
+                                <br><small class="text-secondary">{{ order.created_at|date:"d.m.Y" }}</small>
                             </td>
                             <td>
                                 <strong class="text-success">{{ order.total_amount|floatformat:0 }} so'm</strong>
@@ -242,8 +249,8 @@
             </div>
             {% else %}
             <div class="text-center py-4">
-                <i class="fas fa-clipboard-list fa-3x text-muted"></i>
-                <p class="mt-3 text-muted">Hozircha buyurtmalar yo'q</p>
+                <i class="fas fa-clipboard-list fa-3x text-secondary"></i>
+                <p class="mt-3 text-dark">Hozircha buyurtmalar yo'q</p>
                 <a href="{% url 'kitchen:live_orders' %}" class="btn btn-primary">
                     <i class="fas fa-clock"></i> Jonli monitorga o'tish
                 </a>
@@ -251,7 +258,6 @@
             {% endif %}
         </div>
     </div>
-</div>
 
 {% endblock %}
 
@@ -387,23 +393,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Auto refresh with visibility check
+    // Auto refresh with AJAX for real-time updates
     let refreshInterval;
+    
+    function updateStatistics() {
+        fetch(window.location.href, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.stats) {
+                // Yangi buyurtmalar
+                document.querySelector('[data-target]').textContent = data.stats.new_orders;
+                document.querySelectorAll('[data-target]')[1].textContent = data.stats.preparing_orders;
+                document.querySelectorAll('[data-target]')[2].textContent = data.stats.ready_orders;
+                document.querySelectorAll('[data-target]')[3].textContent = data.stats.total_orders;
+                
+                // Card'larni animatsiya bilan yangilash
+                document.querySelectorAll('.card.fade-in').forEach(card => {
+                    card.style.animation = 'none';
+                    setTimeout(() => card.style.animation = '', 10);
+                });
+            }
+        })
+        .catch(error => console.log('Statistika yangilashda xatolik:', error));
+    }
     
     function startAutoRefresh() {
         refreshInterval = setInterval(() => {
             if (!document.hidden && !document.querySelector('.modal.show')) {
-                // Smooth reload indicator
-                const refreshBtn = document.querySelector('[onclick="location.reload()"]');
-                if (refreshBtn) {
-                    refreshBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Yangilanmoqda...';
-                }
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                updateStatistics();
             }
-        }, 45000); // 45 soniya
+        }, 10000); // 10 soniya
     }
     
     function stopAutoRefresh() {
@@ -418,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
             stopAutoRefresh();
         } else {
             startAutoRefresh();
+            updateStatistics();
         }
     });
     

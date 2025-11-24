@@ -118,7 +118,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% for item in delivery.order.orderitem_set.all %}
+                                    {% for item in delivery.order.items.all %}
                                         <small>{{ item.quantity }}x {{ item.product.name }}</small><br>
                                     {% empty %}
                                         <small class="text-muted">Ma'lumot yo'q</small>
@@ -145,7 +145,7 @@
                                 </td>
                                 <td>
                                     <strong>{{ delivery.order.total_amount|floatformat:0 }} so'm</strong>
-                                    <br><small class="text-muted">{{ delivery.order.orderitem_set.count }} mahsulot</small>
+                                    <br><small class="text-muted">{{ delivery.order.items.count }} mahsulot</small>
                                 </td>
                                 <td>
                                     <div class="btn-group-vertical" role="group">
@@ -188,8 +188,45 @@
 
 {% block extra_js %}
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function setButtonLoading(btn, loading) {
+    if (loading) {
+        btn.disabled = true;
+        btn.dataset.originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
+    }
+}
+
+function showSuccessToast(message) {
+    // Bootstrap toast yoki alert
+    alert(message);
+}
+
+function showErrorToast(message) {
+    alert(message);
+}
+
 function toggleAvailability() {
     const btn = document.getElementById('toggleStatusBtn');
+    const badge = document.querySelector('.badge.fs-6');
+    const originalBtnHtml = btn.innerHTML;
     setButtonLoading(btn, true);
     
     fetch('/courier/toggle-availability/', {
@@ -202,17 +239,33 @@ function toggleAvailability() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccessToast('Status muvaffaqiyatli o\'zgartirildi');
-            setTimeout(() => location.reload(), 1000);
+            // Statusni real vaqtda o'zgartirish
+            btn.disabled = false;
+            if (data.is_available) {
+                // Mavjud holatiga o'tkazish
+                btn.className = 'btn btn-warning';
+                btn.innerHTML = '<i class="fas fa-pause me-2"></i> Band qilish';
+                badge.className = 'badge bg-success fs-6 px-3 py-2';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> Mavjud';
+            } else {
+                // Band holatiga o'tkazish
+                btn.className = 'btn btn-success';
+                btn.innerHTML = '<i class="fas fa-play me-2"></i> Mavjud qilish';
+                badge.className = 'badge bg-danger fs-6 px-3 py-2';
+                badge.innerHTML = '<i class="fas fa-times-circle"></i> Band';
+            }
+            alert('Status muvaffaqiyatli o\'zgartirildi');
         } else {
             showErrorToast(data.message || 'Xatolik yuz berdi');
-            setButtonLoading(btn, false);
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showErrorToast('Xatolik yuz berdi');
-        setButtonLoading(btn, false);
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
     });
 }
 
@@ -334,6 +387,12 @@ function completeDelivery(deliveryId) {
             setButtonLoading(btn, false);
         });
     }
+}
+
+function startAutoRefresh(interval) {
+    setInterval(() => {
+        location.reload();
+    }, interval);
 }
 
 // Auto-refresh every 30 seconds

@@ -3,23 +3,22 @@
 {% block title %}Tayyor buyurtmalar - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Zamonaviy Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div class="d-flex align-items-center">
-                    <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                        <i class="fas fa-check-circle fa-2x text-success"></i>
-                    </div>
-                    <div>
-                        <h1 class="h2 mb-1 fw-bold">Tayyor buyurtmalar</h1>
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-clock me-1"></i>
-                            Yetkazib berish uchun tayyor
-                        </p>
-                    </div>
+<!-- Zamonaviy Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                    <i class="fas fa-check-circle fa-2x text-success"></i>
                 </div>
+                <div>
+                    <h1 class="h2 mb-1 fw-bold">Tayyor buyurtmalar</h1>
+                    <p class="text-secondary mb-0">
+                        <i class="fas fa-clock me-1"></i>
+                        Yetkazib berish uchun tayyor
+                    </p>
+                </div>
+            </div>
                 
                 <div class="d-flex gap-2 flex-wrap align-items-center">
                     <div class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2 fs-6">
@@ -57,7 +56,7 @@
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body py-3">
                     <div class="d-flex flex-wrap gap-2 align-items-center">
-                        <span class="text-muted me-3">
+                        <span class="text-secondary me-3">
                             <i class="fas fa-arrow-right me-1"></i>Tez havolalar:
                         </span>
                         <div class="btn-group" role="group">
@@ -127,13 +126,13 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1 fw-semibold">{{ order.user.get_display_name }}</h6>
-                                    <p class="mb-1 small text-muted">
+                                    <p class="mb-1 small text-dark">
                                         <i class="fas fa-phone me-1"></i>
-                                        <a href="tel:{{ order.phone_number }}" class="text-decoration-none">
+                                        <a href="tel:{{ order.phone_number }}" class="text-decoration-none text-primary">
                                             {{ order.phone_number }}
                                         </a>
                                     </p>
-                                    <p class="mb-0 small text-muted">
+                                    <p class="mb-0 small text-dark">
                                         <i class="fas fa-map-marker-alt me-1"></i>
                                         {{ order.dormitory.name }}, Xona: {{ order.room_number }}
                                     </p>
@@ -180,14 +179,14 @@
                             {% if order.orderprogress %}
                                 <!-- Chef info -->
                                 <div class="bg-light rounded p-2 mb-2">
-                                    <div class="d-flex align-items-center text-muted small">
+                                    <div class="d-flex align-items-center text-dark small">
                                         <i class="fas fa-user-check me-2"></i>
                                         <strong>Oshpaz:</strong>
                                         <span class="ms-1">{{ order.orderprogress.kitchen_staff.full_name }}</span>
                                     </div>
                                     
                                     {% if order.orderprogress.completed_at %}
-                                        <div class="d-flex align-items-center text-muted small mt-1">
+                                        <div class="d-flex align-items-center text-dark small mt-1">
                                             <i class="fas fa-clock me-2"></i>
                                             <strong>Tayyor:</strong>
                                             <span class="ms-1">{{ order.orderprogress.completed_at|date:"H:i" }}</span>
@@ -220,7 +219,7 @@
                             
                             {% if order.delivery %}
                                 <div class="bg-light rounded p-2">
-                                    <div class="text-muted small">
+                                    <div class="text-dark small">
                                         {% if order.delivery.courier %}
                                             <i class="fas fa-user me-2"></i>
                                             <strong>Kuryer:</strong> {{ order.delivery.courier.full_name }}
@@ -300,15 +299,15 @@
     <!-- Info Section -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm bg-gradient-info text-white">
-                <div class="card-body">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
                     <div class="d-flex align-items-center">
                         <div class="bg-white bg-opacity-20 rounded-circle p-3 me-3">
                             <i class="fas fa-info-circle fa-2x text-white"></i>
                         </div>
                         <div>
-                            <h5 class="mb-2">💡 Eslatma</h5>
-                            <p class="mb-0">
+                            <h5 class="mb-2 text-white">💡 Eslatma</h5>
+                            <p class="mb-0 text-white">
                                 Tayyor buyurtmalar avtomatik ravishda kuryerlarga ko'rsatiladi. 
                                 Agar buyurtma uzoq vaqt tayyor holatda qolsa, yetkazib berish xizmati bilan bog'laning.
                             </p>
@@ -316,19 +315,19 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center text-white-50">
+                            <div class="d-flex align-items-center text-white">
                                 <i class="fas fa-clock me-2"></i>
                                 <small>Maksimal kutish: 30 daqiqa</small>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center text-white-50">
+                            <div class="d-flex align-items-center text-white">
                                 <i class="fas fa-phone me-2"></i>
                                 <small>Yordam: +998 90 123 45 67</small>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="d-flex align-items-center text-white-50">
+                            <div class="d-flex align-items-center text-white">
                                 <i class="fas fa-sync me-2"></i>
                                 <small>Avtomatik yangilanish: 20s</small>
                             </div>
@@ -338,7 +337,6 @@
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
