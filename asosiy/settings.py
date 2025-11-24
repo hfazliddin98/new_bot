@@ -103,6 +103,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Telegram Bot sozlamalari
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7305057883:AAG1iuNZK8dIhHXzTS_LV1dlMBneguVJW2Q')
 
+# Webhook URL (hosting uchun - o'z domeningizni yozing)
+TELEGRAM_WEBHOOK_URL = os.getenv('TELEGRAM_WEBHOOK_URL', f'https://{DOMEN}/bot/webhook/')
+
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
 

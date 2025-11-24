@@ -4,24 +4,44 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import json
 import telebot
+import logging
 from .models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem
-from .bot_handlers import handle_telegram_update
+from .telegram_bot import get_bot, setup_handlers
 from users.decorators import admin_required
 
-# Bot instanceni yaratish
-bot = telebot.TeleBot(settings.TELEGRAM_BOT_TOKEN)
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def telegram_webhook(request):
-    """Telegram webhook uchun view"""
+    """Telegram webhook uchun view - hosting uchun"""
     if request.method == 'POST':
         try:
-            json_data = json.loads(request.body.decode('utf-8'))
-            handle_telegram_update(json_data)
+            # Telegram'dan kelgan update'ni JSON formatda olish
+            json_str = request.body.decode('utf-8')
+            update = telebot.types.Update.de_json(json_str)
+            
+            # Bot instance'ni olish
+            bot = get_bot()
+            if not bot:
+                logger.error("Bot instance yaratilmadi")
+                return HttpResponse("Bot error", status=500)
+            
+            # Handler'lar o'rnatilganmi tekshirish (faqat bir marta)
+            if not hasattr(telegram_webhook, 'handlers_set'):
+                setup_handlers()
+                telegram_webhook.handlers_set = True
+                logger.info("Bot handlers o'rnatildi")
+            
+            # Update'ni process qilish
+            bot.process_new_updates([update])
+            logger.info(f"Update processed: {update.update_id}")
+            
             return HttpResponse("OK")
+            
         except Exception as e:
-            print(f"Webhook xatosi: {e}")
+            logger.error(f"Webhook xatosi: {e}", exc_info=True)
             return HttpResponse("Error", status=500)
+    
     return HttpResponse("Method not allowed", status=405)
 
 def set_webhook(request):
