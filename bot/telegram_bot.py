@@ -36,8 +36,9 @@ try:
 except:
     BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7908094134:AAHhj28h-QmV8hqEqOZAUnU9ebXBEwwKuA0')
 
-# Global bot instance
+# Global bot instance va handler holati
 bot_instance = None
+handlers_registered = False
 
 def get_bot():
     """Bot instance'ni olish yoki yaratish"""
@@ -48,9 +49,11 @@ def get_bot():
             bot_instance = telebot.TeleBot(BOT_TOKEN, threaded=True)
             bot_info = bot_instance.get_me()
             print(f'✅ Bot tayyor: @{bot_info.username}')
+            logger.info(f'Bot initialized: @{bot_info.username}')
             return bot_instance
         except Exception as e:
             print(f'❌ Bot yaratishda xatolik: {e}')
+            logger.error(f'Bot initialization error: {e}')
             return None
     return bot_instance
 
@@ -579,10 +582,20 @@ def send_order_to_kitchen(order):
         logger.error(f"Oshpazga xabar yuborishda xatolik: {e}")
 
 def setup_handlers():
-    """Bot handler'larni sozlash"""
+    """Bot handler'larni sozlash (faqat bir marta)"""
+    global handlers_registered
+    
+    # Agar handler'lar allaqachon o'rnatilgan bo'lsa, qaytamiz
+    if handlers_registered:
+        print('ℹ️ Handler\'lar allaqachon o\'rnatilgan')
+        return True
+    
     bot = get_bot()
     if not bot:
-        return
+        print('❌ Bot mavjud emas, handler\'lar o\'rnatilmadi')
+        return False
+    
+    print('🔧 Handler\'lar o\'rnatilmoqda...')
     
     @bot.message_handler(commands=['start'])
     def handle_start(message):
@@ -743,6 +756,12 @@ def setup_handlers():
         except Exception as e:
             logger.error(f"Text message handling xatosi: {e}")
             send_safe_message(message.chat.id, "❌ Xatolik yuz berdi. Qaytadan urinib ko'ring.")
+    
+    # Handler'lar muvaffaqiyatli o'rnatildi
+    handlers_registered = True
+    print('✅ Barcha handler\'lar muvaffaqiyatli o\'rnatildi')
+    logger.info('All handlers registered successfully')
+    return True
 
 def start_bot():
     """Botni ishga tushirish"""

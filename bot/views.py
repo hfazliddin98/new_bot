@@ -26,15 +26,12 @@ def telegram_webhook(request):
                 logger.error("Bot instance yaratilmadi")
                 return HttpResponse("Bot error", status=500)
             
-            # Handler'lar o'rnatilganmi tekshirish (faqat bir marta)
-            if not hasattr(telegram_webhook, 'handlers_set'):
-                setup_handlers()
-                telegram_webhook.handlers_set = True
-                logger.info("Bot handlers o'rnatildi")
+            # Handler'larni o'rnatish (setup_handlers ichida flag bor)
+            setup_handlers()
             
             # Update'ni process qilish
             bot.process_new_updates([update])
-            logger.info(f"Update processed: {update.update_id}")
+            logger.debug(f"Update processed: {update.update_id}")
             
             return HttpResponse("OK")
             

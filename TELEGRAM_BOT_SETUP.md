@@ -78,9 +78,43 @@ python manage.py start_webhook
   - Pending updates: 0
 ```
 
-### 6️⃣ Test
+⚠️ **Muhim:** Webhook o'rnatilgandan keyin Django server **avtomatik** ishga tushadi. Alohida bot processi ishga tushirish shart emas!
+
+### 6️⃣ Test va Tekshirish
+
+**A. Tezkor tekshirish:**
+
+```bash
+cd ~/new_bot
+workon botenv
+python check_webhook.py
+```
+
+Bu script webhook holatini ko'rsatadi:
+- ✅ Bot username va ID
+- ✅ Webhook URL (o'rnatilgan yoki yo'q)
+- ✅ Pending updates soni
+- ❌ Oxirgi xatolar (agar bo'lsa)
+
+**B. Manual test:**
 
 Telegram'da botga `/start` yuboring. Javob kelishi kerak!
+
+**C. Qanday ishlaydi:**
+
+```
+1. Foydalanuvchi bot'ga xabar yuboradi (Telegram)
+2. Telegram serveri webhook'ga POST request yuboradi
+   → https://dastavka.pythonanywhere.com/bot/webhook/
+3. Django view (bot/views.py) request'ni qabul qiladi
+4. Handler'lar xabarni process qiladi
+5. Bot javob yuboradi (Telegram API orqali)
+```
+
+⚠️ **Eslatma:** 
+- Django server ishlayotgan bo'lishi kerak (PythonAnywhere Web tab'da)
+- Polling **ISHLAMAYDI** hostingda - faqat webhook!
+- Har safar code o'zgarsa, Web app'ni **Reload** qiling
 
 ---
 
@@ -93,6 +127,12 @@ Telegram'da botga `/start` yuboring. Javob kelishi kerak!
 ```bash
 cd ~/new_bot
 workon botenv
+python check_webhook.py
+```
+
+Yoki manual:
+
+```bash
 python
 ```
 
