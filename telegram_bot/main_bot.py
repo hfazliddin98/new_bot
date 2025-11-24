@@ -26,6 +26,37 @@ from telebot import types
 from bot.models import TelegramUser, Message, Category, Product, Cart, Order, OrderItem, DeliveryZone, Dormitory, OrderSession
 from decimal import Decimal
 
+# Spam himoyasi
+try:
+    from .spam_protection import (
+        is_spam_message, is_user_blocked, block_user,
+        is_private_chat, validate_message
+    )
+except ImportError:
+    # Agar import muvaffaqiyatsiz bo'lsa, oddiy funksiyalarni yaratamiz
+    def is_spam_message(text):
+        if not text:
+            return False
+        text_lower = text.lower()
+        spam_keywords = ['mega', 'direct link', 'stream', 'hot_girl', 'po*n', 'porn', 't.me/', 'http', 'https', '👇', '👆']
+        return any(keyword in text_lower for keyword in spam_keywords)
+    
+    def is_user_blocked(user_id):
+        return False
+    
+    def block_user(user_id):
+        pass
+    
+    def is_private_chat(message):
+        return message.chat.type == 'private'
+    
+    def validate_message(message):
+        if not is_private_chat(message):
+            return False, "Faqat shaxsiy chatda"
+        if message.text and is_spam_message(message.text):
+            return False, "Spam"
+        return True, "OK"
+
 # Logging sozlash
 logger = logging.getLogger(__name__)
 
@@ -513,10 +544,50 @@ def setup_handlers():
     if not bot:
         return
     
+    # ============ SPAM HIMOYASI ============
+    # (spam_protection.py modulida implement qilingan)
+    
+    # ============ GURUH/KANAL HIMOYASI ============
+    
+    @bot.message_handler(content_types=['new_chat_members'])
+    def handle_new_chat_members(message):
+        """Bot guruhga qo'shilganda chiqish"""
+        try:
+            # Agar bot guruhga qo'shilgan bo'lsa
+            for new_member in message.new_chat_members:
+                if new_member.id == bot.get_me().id:
+                    # Ogohlantirish xabari yuborish
+                    send_safe_message(
+                        message.chat.id,
+                        "⚠️ Kechirasiz, men faqat shaxsiy chatda ishlayman!\n"
+                        "Iltimos, menga shaxsiy xabar yuboring: /start"
+                    )
+                    # Guruhdan chiqish
+                    time.sleep(2)
+                    bot.leave_chat(message.chat.id)
+                    logger.info(f"Bot guruhdan chiqdi: {message.chat.id} - {message.chat.title}")
+        except Exception as e:
+            logger.error(f"Guruhdan chiqishda xatolik: {e}")
+    
+    # ============ ASOSIY HANDLER'LAR ============
+    
     @bot.message_handler(commands=['start'])
     def handle_start(message):
         """Start buyrug'i"""
         try:
+            # HIMOYA: Xabarni validatsiya qilish
+            is_valid, error_msg = validate_message(message)
+            if not is_valid:
+                if error_msg == "Faqat shaxsiy chatda ishlaydi":
+                    send_safe_message(
+                        message.chat.id,
+                        "⚠️ Men faqat shaxsiy chatda ishlayman!\n"
+                        "Iltimos, menga shaxsiy xabar yuboring."
+                    )
+                # Spam yoki bloklangan foydalanuvchilar uchun javob bermaymiz
+                logger.warning(f"Xabar rad etildi: {error_msg} - user_id={message.from_user.id}")
+                return
+            
             user_id = message.from_user.id
             username = message.from_user.username or ""
             first_name = message.from_user.first_name or ""
@@ -546,6 +617,12 @@ def setup_handlers():
     def handle_contact(message):
         """Telefon raqamini qabul qilish"""
         try:
+            # HIMOYA: Xabarni validatsiya qilish
+            is_valid, error_msg = validate_message(message)
+            if not is_valid:
+                logger.warning(f"Contact rad etildi: {error_msg}")
+                return
+            
             user_id = message.from_user.id
             user = TelegramUser.objects.get(user_id=user_id)
             
@@ -576,6 +653,10 @@ def setup_handlers():
     def handle_callbacks(call):
         """Callback query'larni qayta ishlash"""
         try:
+            # HIMOYA: Faqat shaxsiy chatda ishlash
+            if call.message.chat.type != 'private':
+                return
+            
             user_id = call.from_user.id
             user = TelegramUser.objects.get(user_id=user_id)
             data = call.data
@@ -665,6 +746,13 @@ def setup_handlers():
     def handle_text_messages(message):
         """Barcha matnli xabarlarni qayta ishlash"""
         try:
+            # HIMOYA: Xabarni validatsiya qilish
+            is_valid, error_msg = validate_message(message)
+            if not is_valid:
+                if error_msg == "Spam xabar aniqlandi":
+                    logger.warning(f"SPAM BLOKLANDI: user_id={message.from_user.id}, username=@{message.from_user.username}, text={message.text[:100]}")
+                return
+            
             user_id = message.from_user.id
             text = message.text.strip()
             
