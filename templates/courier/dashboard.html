@@ -156,22 +156,22 @@
             </div>
             <div class="card-body">
                 {% if ready_orders %}
-                    {% for order in ready_orders %}
+                    {% for delivery in ready_orders %}
                         <div class="card mb-2">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h6 class="card-title">#{{ order.id }}</h6>
+                                        <h6 class="card-title">#{{ delivery.order.id }}</h6>
                                         <p class="card-text">
-                                            <i class="fas fa-user"></i> {{ order.user.get_display_name }}<br>
-                                            <i class="fas fa-map-marker-alt"></i> {{ order.dormitory.name }}<br>
-                                            <i class="fas fa-money-bill"></i> {{ order.total_amount|floatformat:0 }} so'm
+                                            <i class="fas fa-user"></i> {{ delivery.order.user.get_display_name }}<br>
+                                            <i class="fas fa-map-marker-alt"></i> {{ delivery.order.dormitory.name }}, {{ delivery.order.room_number }}-xona<br>
+                                            <i class="fas fa-money-bill"></i> {{ delivery.order.total_amount|floatformat:0 }} so'm
                                         </p>
                                     </div>
                                     <div>
                                         <span class="badge bg-success">Tayyor</span>
                                         <div class="mt-2">
-                                            <button class="btn btn-sm btn-primary" data-order-id="{{ order.id }}" onclick="takeOrder(this.dataset.orderId)">
+                                            <button class="btn btn-sm btn-primary" data-delivery-id="{{ delivery.id }}" onclick="takeOrder(this.dataset.deliveryId)">
                                                 <i class="fas fa-hand-paper"></i> Olish
                                             </button>
                                         </div>

@@ -45,38 +45,73 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 6. Test ma'lumotlar yaratish
+### 6. Test ma'lumotlar yaratish (ixtiyoriy)
 ```bash
 python create_products.py
 python create_dormitories.py
 python create_staff.py
 ```
 
-### 7. Serverni ishga tushirish
+### 7. Loyihani ishga tushirish
 ```bash
+# Django server va Telegram bot bir vaqtda ishga tushadi
 python manage.py runserver
 ```
 
-### 8. Telegram botni ishga tushirish
-```bash
-python manage.py runbot
-```
+Bot avtomatik ishga tushadi va http://127.0.0.1:8000/ da ishlaydi.
 
 ## 📂 Loyiha strukturasi
 
 ```
 new_bot/
-├── asosiy/              # Django settings
-├── bot/                 # Telegram bot app
-├── kitchen/             # Oshxona app
-├── courier/             # Kuryer app
-├── telegram_bot/        # Bot fayllar to'plami
-├── templates/           # HTML shablonlar
-├── static/              # CSS, JS, images
-├── media/               # Upload fayllar
-├── .env                 # Environment variables
-├── manage.py            # Django management
-└── requirements.txt     # Python packages
+├── asosiy/                  # Django asosiy sozlamalari
+│   ├── settings.py          # Loyiha sozlamalari
+│   ├── urls.py              # Asosiy URL routing
+│   └── wsgi.py              # WSGI konfiguratsiya
+├── bot/                     # Telegram bot app
+│   ├── models.py            # TelegramUser, Product, Order, Cart
+│   ├── views.py             # Bot API views
+│   ├── admin.py             # Django admin
+│   ├── management/
+│   │   └── commands/
+│   │       └── manage_spam.py  # Spam boshqaruv
+│   └── migrations/
+├── kitchen/                 # Oshxona app
+│   ├── models.py            # KitchenStaff, OrderProgress
+│   ├── views.py             # Kitchen dashboard
+│   └── urls.py
+├── courier/                 # Kuryer app
+│   ├── models.py            # CourierStaff, Delivery
+│   ├── views.py             # Courier dashboard
+│   └── urls.py
+├── users/                   # Custom User model
+│   ├── models.py            # User (role-based)
+│   ├── views.py             # Admin panel views
+│   ├── forms.py             # Staff forms
+│   ├── decorators.py        # @admin_required, @kitchen_required
+│   └── middleware.py        # Role-based access
+├── telegram_bot/            # Bot fayllar
+│   ├── main_bot.py          # Asosiy bot mantiq
+│   ├── spam_protection.py   # Spam himoyasi
+│   ├── handlers.py          # Xabar handlerlari
+│   └── django_bot.py        # Management command
+├── templates/               # HTML shablonlar
+│   ├── admin_panel/
+│   ├── kitchen/
+│   ├── courier/
+│   └── base.html
+├── static/                  # CSS, JS, rasm
+├── media/                   # Yuklangan fayllar
+├── create_products.py       # Mahsulotlar yaratish
+├── create_dormitories.py    # Yotoqxonalar yaratish
+├── create_staff.py          # Xodimlar yaratish
+├── test_spam_protection.py  # Spam test
+├── manage.py                # Django management
+├── requirements.txt         # Python paketlar
+├── .env.example             # Environment misol
+├── README.md                # Ushbu fayl
+├── SPAM_PROTECTION.md       # Spam himoyasi qo'llanma
+└── SPAM_FIX_SUMMARY.md      # Spam fix xulosa
 ```
 
 ## 🔗 Asosiy URL'lar
@@ -89,10 +124,10 @@ new_bot/
 ## 🤖 Telegram Bot
 
 Bot `telegram_bot/` papkasida joylashgan:
-- `main_bot.py` - Asosiy bot fayli
+- `main_bot.py` - Asosiy bot fayli (spam himoyasi bilan)
+- `spam_protection.py` - Spam filtr tizimi
 - `handlers.py` - Message handlerlar
 - `django_bot.py` - Django management command
-- `README.md` - Bot haqida batafsil
 
 ### Bot funksiyalari:
 - ✅ Foydalanuvchi registratsiyasi

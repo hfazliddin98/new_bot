@@ -1,5 +1,0 @@
-Django
-pyTelegramBotAPI
-python-dotenv
-requests
-Pillow
