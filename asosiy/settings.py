@@ -10,8 +10,13 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key')
 
 DEBUG = os.getenv('DEBUG', 'True').lower() in ['true', '1', 'yes']
 
-DOMEN = 'dastavka.pythonanywhere.com'
+# Production domain (hostingda o'zgartiring)
+DOMEN = os.getenv('DOMEN', 'dastavka.pythonanywhere.com')
+# Boshqa variantlar:
 # DOMEN = 'apiombor.kspi.uz'
+# DOMEN = 'your-heroku-app.herokuapp.com'
+# DOMEN = 'yourdomain.com'
+
 LOCAL_DOMEN = '127.0.0.1'
 
 ALLOWED_HOSTS = ['.kokanddeveloper.uz', DOMEN, 'localhost', LOCAL_DOMEN, '.pythonanywhere.com']
@@ -101,10 +106,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Telegram Bot sozlamalari
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7305057883:AAG1iuNZK8dIhHXzTS_LV1dlMBneguVJW2Q')
-
-# Webhook URL (hosting uchun - o'z domeningizni yozing)
-TELEGRAM_WEBHOOK_URL = os.getenv('TELEGRAM_WEBHOOK_URL', f'https://{DOMEN}/bot/webhook/')
+# @qdutaomttj_bot - Faqat Polling rejimi
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '7908094134:AAHhj28h-QmV8hqEqOZAUnU9ebXBEwwKuA0')
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
